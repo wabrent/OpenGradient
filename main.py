@@ -396,7 +396,43 @@ def run_web_server(host: str = "127.0.0.1", port: int = 8000) -> None:
         def do_GET(self):
             parsed = urlparse(self.path)
             if parsed.path == "/":
-                _text_response(self, 200, index_html, "text/html; charset=utf-8")
+                # Serve the real index.html if it exists
+                try:
+                    with open("index.html", "rb") as f:
+                        content = f.read()
+                    _text_response(self, 200, content, "text/html; charset=utf-8")
+                except Exception:
+                    _text_response(self, 200, index_html, "text/html; charset=utf-8")
+                return
+            if parsed.path == "/api/txs":
+                # Proxy to Blockscout (Base Sepolia)
+                query = parse_qs(parsed.query)
+                address = query.get("address", [""])[0]
+                limit = _safe_int(query.get("limit", ["200"])[0]) or 200
+                if not address:
+                    _json_response(self, 400, {"ok": False, "error": "missing_address"})
+                    return
+                try:
+                    # Reuse fetch function logic
+                    from check_wallets import _fetch_txs, _wei_to_eth
+                    items = _fetch_txs(address, limit)
+                    txs = []
+                    for item in items:
+                        txs.append({
+                            "tx_hash": item.get("hash"),
+                            "value": _wei_to_eth(item.get("value")),
+                            "timestamp": item.get("timestamp")
+                        })
+                    _json_response(self, 200, {
+                        "ok": True,
+                        "chain": "base-sepolia",
+                        "source": "blockscout",
+                        "address": address,
+                        "tx_count": len(txs),
+                        "txs": txs
+                    })
+                except Exception as e:
+                    _json_response(self, 502, {"ok": False, "error": str(e)})
                 return
             if parsed.path == "/health":
                 _json_response(self, 200, {"ok": True})
@@ -462,6 +498,10 @@ def _is_payment_required_error(e: Exception) -> bool:
 
     message = str(e).lower()
     if "payment required" in message or "402" in message:
+        return True
+    
+    # Catch SDK-specific payment errors that might not have 402 in string
+    if "payment" in message or "permit2" in message or "no payment requirements" in message:
         return True
 
     cause = getattr(e, "__cause__", None) or getattr(e, "__context__", None)
