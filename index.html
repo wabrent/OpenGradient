@@ -6,40 +6,41 @@
     <title>Wallet Reputation</title>
     <style>
       :root{
-        --bg0:#070a14;
-        --bg1:#0a0f20;
-        --card:rgba(255,255,255,.06);
-        --card2:rgba(255,255,255,.08);
-        --stroke:rgba(255,255,255,.12);
-        --text:#e8ecff;
-        --muted:rgba(232,236,255,.72);
-        --muted2:rgba(232,236,255,.55);
-        --good:#2ee59d;
-        --bad:#ff5f6d;
-        --warn:#ffd166;
-        --accent:#7c5cff;
-        --shadow:0 18px 50px rgba(0,0,0,.55);
-        --radius:16px;
+        --bg0:#97e3ea;
+        --bg1:#b9f1f3;
+        --bg2:#e8feff;
+        --ink:#073546;
+        --muted:rgba(7,53,70,.75);
+        --muted2:rgba(7,53,70,.58);
+        --card:rgba(255,255,255,.78);
+        --stroke:rgba(7,53,70,.12);
+        --shadow:0 18px 60px rgba(7,53,70,.10);
+        --radius:18px;
+        --accent:#0b4b61;
+        --accent2:#0a3f52;
+        --good:#0bbd8c;
+        --bad:#ff4d67;
+        --warn:#f5b301;
       }
 
       *{box-sizing:border-box}
       html,body{height:100%}
       body{
         margin:0;
-        color:var(--text);
+        color:var(--ink);
         font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
         background:
-          radial-gradient(1200px 700px at 10% -10%, rgba(124,92,255,.35) 0%, rgba(124,92,255,0) 60%),
-          radial-gradient(900px 600px at 95% 10%, rgba(46,229,157,.18) 0%, rgba(46,229,157,0) 55%),
-          radial-gradient(900px 600px at 70% 110%, rgba(255,95,109,.18) 0%, rgba(255,95,109,0) 55%),
-          linear-gradient(180deg, var(--bg0), var(--bg1));
+          radial-gradient(900px 600px at 82% 35%, rgba(7,53,70,.10) 0%, rgba(7,53,70,0) 60%),
+          radial-gradient(800px 520px at 12% 20%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 65%),
+          radial-gradient(900px 520px at 10% 105%, rgba(11,189,140,.18) 0%, rgba(11,189,140,0) 60%),
+          linear-gradient(180deg, var(--bg0), var(--bg1) 55%, var(--bg2));
       }
 
       a{color:inherit}
       input,textarea,button{font:inherit}
       textarea{width:100%;min-height:180px;resize:vertical}
 
-      .wrap{max-width:1060px;margin:0 auto;padding:28px 20px 40px}
+      .wrap{max-width:1100px;margin:0 auto;padding:26px 20px 42px}
       .top{
         display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap
       }
@@ -48,33 +49,66 @@
       .linkbtn{
         display:inline-flex;align-items:center;gap:8px;
         padding:9px 10px;border-radius:14px;
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(255,255,255,.06);
+        border:1px solid rgba(7,53,70,.15);
+        background:rgba(255,255,255,.70);
         text-decoration:none;
-        color:var(--text);
+        color:var(--ink);
         transition:transform .08s ease, background .12s ease, border-color .12s ease;
       }
-      .linkbtn:hover{background:rgba(255,255,255,.10)}
+      .linkbtn:hover{background:rgba(255,255,255,.86);border-color:rgba(7,53,70,.22)}
       .linkbtn:active{transform:translateY(1px)}
       .ico{width:16px;height:16px;opacity:.95}
       .logo{
         width:44px;height:44px;border-radius:14px;
-        background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(46,229,157,.9));
-        box-shadow:0 10px 30px rgba(124,92,255,.25);
+        display:grid;place-items:center;
+        background:rgba(255,255,255,.70);
+        border:1px solid rgba(7,53,70,.15);
       }
-      .title{margin:0;font-size:30px;letter-spacing:.2px}
-      .subtitle{margin:6px 0 0;color:var(--muted);max-width:720px;line-height:1.45}
+      .title{margin:0;font-size:34px;letter-spacing:-.3px}
+      .subtitle{margin:8px 0 0;color:var(--muted);max-width:760px;line-height:1.5}
+
+      .hero{
+        display:grid;
+        grid-template-columns:1.05fr .95fr;
+        gap:16px;
+        margin-top:18px;
+        align-items:center;
+        padding:18px;
+        border-radius:calc(var(--radius) + 8px);
+        border:1px solid rgba(7,53,70,.12);
+        background:linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.52));
+        box-shadow:var(--shadow);
+        overflow:hidden;
+      }
+      @media (max-width:980px){.hero{grid-template-columns:1fr}}
+      .hero h2{margin:0;font-size:56px;line-height:1.03;letter-spacing:-1px}
+      @media (max-width:980px){.hero h2{font-size:44px}}
+      .hero p{margin:12px 0 0;color:var(--muted);max-width:640px;line-height:1.55}
+      .heroActions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+      .btn.lg{padding:12px 14px;border-radius:16px}
+      .btn.primary.lg{box-shadow:0 10px 24px rgba(11,75,97,.18)}
+      .globe{
+        width:100%;
+        aspect-ratio:1/1;
+        border-radius:999px;
+        background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.75), rgba(255,255,255,0) 45%),
+                   radial-gradient(circle at 60% 65%, rgba(11,75,97,.10), rgba(11,75,97,0) 55%);
+        display:grid;
+        place-items:center;
+        position:relative;
+      }
+      .globe svg{max-width:92%;height:auto;opacity:.92}
 
       .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:18px}
       @media (max-width:980px){.grid{grid-template-columns:1fr}}
 
       .card{
-        background:linear-gradient(180deg, var(--card), rgba(255,255,255,.03));
+        background:linear-gradient(180deg, var(--card), rgba(255,255,255,.62));
         border:1px solid var(--stroke);
         border-radius:var(--radius);
         box-shadow:var(--shadow);
         padding:16px;
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
       }
 
       .card h2{margin:0 0 10px;font-size:16px;color:var(--muted)}
@@ -84,50 +118,51 @@
 
       .input, .textarea{
         width:100%;
-        color:var(--text);
-        background:rgba(0,0,0,.25);
-        border:1px solid rgba(255,255,255,.14);
+        color:var(--ink);
+        background:rgba(255,255,255,.86);
+        border:1px solid rgba(7,53,70,.14);
         border-radius:14px;
         padding:12px 12px;
         outline:none;
       }
-      .input:focus, .textarea:focus{border-color:rgba(124,92,255,.6);box-shadow:0 0 0 4px rgba(124,92,255,.12)}
+      .input:focus, .textarea:focus{border-color:rgba(11,75,97,.45);box-shadow:0 0 0 4px rgba(11,75,97,.10)}
       .textarea{min-height:190px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12.5px;line-height:1.55}
 
       .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
       .btn{
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(255,255,255,.06);
-        color:var(--text);
+        border:1px solid rgba(7,53,70,.16);
+        background:rgba(255,255,255,.74);
+        color:var(--ink);
         padding:10px 12px;
         border-radius:14px;
         cursor:pointer;
         transition:transform .08s ease, background .12s ease, border-color .12s ease;
       }
-      .btn:hover{background:rgba(255,255,255,.10)}
+      .btn:hover{background:rgba(255,255,255,.90);border-color:rgba(7,53,70,.22)}
       .btn:active{transform:translateY(1px)}
       .btn.primary{
-        border-color:rgba(124,92,255,.55);
-        background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(124,92,255,.55));
+        border-color:rgba(11,75,97,.40);
+        background:linear-gradient(135deg, rgba(11,75,97,.96), rgba(10,63,82,.96));
+        color:#fff;
       }
-      .btn.primary:hover{background:linear-gradient(135deg, rgba(124,92,255,1), rgba(124,92,255,.65))}
+      .btn.primary:hover{background:linear-gradient(135deg, rgba(11,75,97,1), rgba(10,63,82,1))}
       .btn.ghost{background:transparent}
 
       .hint{color:var(--muted2);font-size:12px;line-height:1.45;margin-top:10px}
-      .hint code{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);padding:2px 6px;border-radius:8px}
+      .hint code{background:rgba(255,255,255,.70);border:1px solid rgba(7,53,70,.12);padding:2px 6px;border-radius:8px}
 
       .status{
         display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
         padding:12px 12px;border-radius:14px;
-        background:rgba(0,0,0,.20);
-        border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.70);
+        border:1px solid rgba(7,53,70,.12);
       }
       .badge{
         display:inline-flex;align-items:center;gap:8px;
         border-radius:999px;
         padding:7px 10px;
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(255,255,255,.06);
+        border:1px solid rgba(7,53,70,.12);
+        background:rgba(255,255,255,.80);
         font-weight:600;
       }
       .dot{width:9px;height:9px;border-radius:50%}
@@ -151,17 +186,17 @@
         list-style:none;
         display:flex;align-items:center;justify-content:space-between;gap:12px;
         padding:10px 12px;
-        border:1px solid rgba(255,255,255,.12);
+        border:1px solid rgba(7,53,70,.12);
         border-radius:14px;
-        background:rgba(255,255,255,.04);
+        background:rgba(255,255,255,.60);
       }
       .panel summary::-webkit-details-marker{display:none}
       .panel .body{margin-top:10px}
       pre{
         margin:0;
-        background:rgba(6,10,26,.75);
-        border:1px solid rgba(255,255,255,.10);
-        color:#e8ecff;
+        background:rgba(255,255,255,.74);
+        border:1px solid rgba(7,53,70,.12);
+        color:var(--ink);
         padding:12px;
         border-radius:14px;
         overflow:auto;
@@ -180,8 +215,8 @@
       .mini{
         padding:14px;
         border-radius:16px;
-        border:1px solid rgba(255,255,255,.12);
-        background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+        border:1px solid rgba(7,53,70,.12);
+        background:linear-gradient(180deg, rgba(255,255,255,.76), rgba(255,255,255,.62));
       }
       .mini .t{display:flex;align-items:center;gap:10px;font-weight:700}
       .mini .d{margin-top:8px;color:var(--muted2);font-size:12.5px;line-height:1.5}
@@ -189,7 +224,7 @@
 
       .bottom{
         display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
-        margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.10);
+        margin-top:16px;padding-top:14px;border-top:1px solid rgba(7,53,70,.12);
         color:var(--muted2);font-size:12px
       }
     </style>
@@ -198,7 +233,12 @@
     <div class="wrap">
       <div class="top">
         <div class="brand">
-          <div class="logo"></div>
+          <div class="logo" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2.6 20 7.2v9.6l-8 4.6-8-4.6V7.2L12 2.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M7.5 10.2h9M7.5 13.8h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
           <div>
             <h1 class="title">Reputation Analyzer</h1>
             <p class="subtitle">A clean Vercel-ready UI that estimates wallet reputation with local heuristics. No tokens required.</p>
@@ -224,7 +264,46 @@
         </div>
       </div>
 
-      <div class="grid">
+      <div class="hero">
+        <div>
+          <h2>The Network for<br/>Wallet Reputation</h2>
+          <p>Analyze wallet activity with a transparent heuristic score. Works fully in the browser for a tokenless MVP, with an upgrade path to verifiable inference later.</p>
+          <div class="heroActions">
+            <a class="btn primary lg" href="#analyzer">Open Analyzer</a>
+            <a class="btn lg" href="https://docs.opengradient.ai/" target="_blank" rel="noreferrer">OpenGradient Docs</a>
+          </div>
+          <div class="hint" style="margin-top:12px">This is an unofficial community tool and is not affiliated with OpenGradient.</div>
+        </div>
+        <div class="globe" aria-hidden="true">
+          <svg viewBox="0 0 520 520" fill="none">
+            <circle cx="260" cy="260" r="210" stroke="rgba(11,75,97,.35)" stroke-width="2"/>
+            <circle cx="260" cy="260" r="170" stroke="rgba(11,75,97,.22)" stroke-width="2"/>
+            <circle cx="260" cy="260" r="130" stroke="rgba(11,75,97,.18)" stroke-width="2"/>
+            <path d="M50 260h420" stroke="rgba(11,75,97,.30)" stroke-width="2"/>
+            <path d="M260 50v420" stroke="rgba(11,75,97,.22)" stroke-width="2"/>
+            <path d="M95 150c55 55 125 85 165 85s110-30 165-85" stroke="rgba(11,75,97,.22)" stroke-width="2"/>
+            <path d="M95 370c55-55 125-85 165-85s110 30 165 85" stroke="rgba(11,75,97,.22)" stroke-width="2"/>
+            <path d="M150 95c55 55 85 125 85 165s-30 110-85 165" stroke="rgba(11,75,97,.18)" stroke-width="2"/>
+            <path d="M370 95c-55 55-85 125-85 165s30 110 85 165" stroke="rgba(11,75,97,.18)" stroke-width="2"/>
+            <g opacity=".95">
+              <circle cx="205" cy="220" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="215" cy="252" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="230" cy="240" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="245" cy="260" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="265" cy="240" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="285" cy="255" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="300" cy="230" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="318" cy="260" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="295" cy="285" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="260" cy="295" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="230" cy="290" r="2.3" fill="rgba(11,75,97,.55)"/>
+              <circle cx="210" cy="280" r="2.3" fill="rgba(11,75,97,.55)"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="grid" id="analyzer">
         <div class="card">
           <h2>Input</h2>
           <div class="row">
