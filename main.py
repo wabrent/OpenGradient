@@ -189,6 +189,7 @@ def _default_mock_transactions() -> list[dict]:
     ]
 
 
+
 def _score_wallet_locally(wallet_address: str, txs: list[dict]) -> dict:
     tx_count = len(txs)
     values: list[float] = []
@@ -408,7 +409,7 @@ def run_web_server(host: str = "127.0.0.1", port: int = 8000) -> None:
                 # Proxy to Blockscout (Base Sepolia)
                 query = parse_qs(parsed.query)
                 address = query.get("address", [""])[0]
-                limit = _safe_int(query.get("limit", ["200"])[0]) or 200
+                limit = min(50, _safe_int(query.get("limit", ["50"])[0]) or 50)
                 if not address:
                     _json_response(self, 400, {"ok": False, "error": "missing_address"})
                     return

@@ -12,7 +12,8 @@ def _is_hex_address(value: str) -> bool:
     return isinstance(value, str) and value.startswith("0x") and len(value) == 42
 
 
-def _fetch_txs(address: str, limit: int = 200) -> list[dict]:
+def _fetch_txs(address: str, limit: int = 50) -> list[dict]:
+    limit = max(1, min(limit, 50))
     url = f"{BLOCKSCOUT_BASE_SEPOLIA}/addresses/{address}/transactions?{urllib.parse.urlencode({'items_count': str(limit)})}"
     req = urllib.request.Request(
         url,
