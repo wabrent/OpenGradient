@@ -649,12 +649,19 @@
           return { ok: false, error: 'Auto-fetch is unavailable when opening the file locally. Use the deployed Vercel URL.' };
         }
         const url = `/api/txs?address=${encodeURIComponent(address)}&limit=${encodeURIComponent(String(limit || 200))}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
         let r;
         try {
-          r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          r = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: controller.signal });
         } catch (e) {
+          clearTimeout(timeoutId);
+          if (e && e.name === 'AbortError') {
+            return { ok: false, error: 'Timeout while fetching transactions. Try again.' };
+          }
           return { ok: false, error: 'Network error while fetching transactions.' };
         }
+        clearTimeout(timeoutId);
         let data = null;
         try { data = await r.json(); } catch { data = null; }
         if (!r.ok) {
@@ -711,6 +718,7 @@
 
       async function run() {
         saveState();
+        btnRun.disabled = true;
         setStatus({}, 'Analyzing…', 'info');
         setOutput(null);
 
@@ -718,12 +726,14 @@
         const v = validateAddress(address);
         if (!v.ok) {
           setStatus({}, v.message, 'error');
+          btnRun.disabled = false;
           return;
         }
 
         const p = parseTransactions(txjson.value);
         if (!p.ok) {
           setStatus({}, p.error, 'error');
+          btnRun.disabled = false;
           return;
         }
 
@@ -734,6 +744,7 @@
           const fetched = await fetchTransactions(address, 200);
           if (!fetched.ok) {
             setStatus({}, fetched.error, 'error');
+            btnRun.disabled = false;
             return;
           }
           txs = fetched.txs;
@@ -746,6 +757,7 @@
         const message = v.message || note || 'Done';
         setStatus(result, message, 'info');
         setOutput(result);
+        btnRun.disabled = false;
       }
 
       btnRun.addEventListener('click', run);
