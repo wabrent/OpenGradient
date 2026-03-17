@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Wallet Reputation</title>
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:24px;max-width:960px}
+      input,textarea,button{font:inherit}
+      textarea{width:100%;min-height:180px}
+      .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+      .muted{color:#666}
+      pre{background:#0b1020;color:#e6e6e6;padding:12px;border-radius:8px;overflow:auto}
+      .card{border:1px solid #ddd;border-radius:10px;padding:14px}
+      .pill{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid #ddd}
+      .pill.h{background:#e9f7ef}
+      .pill.b{background:#fdecea}
+    </style>
+  </head>
+  <body>
+    <h1>Reputation Analyzer</h1>
+    <p class="muted">Статический сайт (Vercel). Локальный скоринг по эвристикам, без токенов.</p>
+
+    <div class="card">
+      <div class="row">
+        <label>Адрес:</label>
+        <input id="address" style="flex:1;min-width:340px" placeholder="0x..." />
+        <button id="run">Проверить</button>
+      </div>
+      <p class="muted">Опционально: вставь транзакции JSON (list объектов с value и timestamp в ISO).</p>
+      <textarea id="txjson" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
+    </div>
+
+    <h2>Результат</h2>
+    <div class="row" style="margin:8px 0 12px">
+      <span id="badge" class="pill">—</span>
+      <span id="score" class="muted"></span>
+    </div>
+    <pre id="out">—</pre>
+
+    <script>
+      const out = document.getElementById('out');
+      const badge = document.getElementById('badge');
+      const scoreEl = document.getElementById('score');
+      const addr = document.getElementById('address');
+      const txjson = document.getElementById('txjson');
+
+      function parseIsoTimestamp(v) {
+        if (typeof v !== 'string' || !v.trim()) return null;
+        const raw = v.trim().replace(/Z$/,'+00:00');
+        const d = new Date(raw);
+        if (Number.isNaN(d.getTime())) return null;
+        return d;
+      }
+
+      function asFloat(v) {
+        if (typeof v === 'number' && Number.isFinite(v)) return v;
+        if (typeof v === 'string') {
+          const n = Number(v.trim());
+          return Number.isFinite(n) ? n : null;
+        }
+        return null;
+      }
+
+      function defaultMockTransactions() {
+        return [
+          { tx_hash: "0xabc123...", value: 0.5, timestamp: "2024-03-10T12:00:00Z" },
+          { tx_hash: "0xdef456...", value: 10.2, timestamp: "2024-03-11T14:30:00Z" },
+          { tx_hash: "0x789ghi...", value: 0.01, timestamp: "2024-03-12T09:15:00Z" },
+        ];
+      }
+
+      function scoreWalletLocally(wallet, txs) {
+        const txCount = Array.isArray(txs) ? txs.length : 0;
+        const values = [];
+        const times = [];
+
+        for (const tx of (Array.isArray(txs) ? txs : [])) {
+          if (!tx || typeof tx !== 'object') continue;
+          const v = asFloat(tx.value);
+          if (v !== null) values.push(v);
+          const t = parseIsoTimestamp(tx.timestamp);
+          if (t) times.push(t);
+        }
+
+        times.sort((a,b) => a.getTime()-b.getTime());
+        let spanSeconds = null;
+        if (times.length >= 2) spanSeconds = (times[times.length-1].getTime() - times[0].getTime()) / 1000;
+        const spanHours = (spanSeconds && spanSeconds > 0) ? (spanSeconds / 3600) : null;
+        const txPerHour = (spanHours) ? (txCount / spanHours) : null;
+
+        const rounded = values.map(v => Math.round(v * 1e6) / 1e6);
+        const uniqueRatio = rounded.length ? (new Set(rounded).size / rounded.length) : null;
+        const repeatRatio = (uniqueRatio !== null) ? (1.0 - uniqueRatio) : null;
+
+        const smallFraction = values.length ? (values.filter(v => v <= 0.02).length / values.length) : null;
+        const largeFraction = values.length ? (values.filter(v => v >= 5.0).length / values.length) : null;
+
+        let score = 0;
+        const reasons = [];
+
+        if (txCount >= 50) { score += 20; reasons.push("Очень много транзакций"); }
+        else if (txCount >= 20) { score += 10; reasons.push("Много транзакций"); }
+
+        if (txPerHour !== null) {
+          if (txPerHour >= 30) { score += 30; reasons.push("Высокая частота транзакций (burst)"); }
+          else if (txPerHour >= 10) { score += 15; reasons.push("Повышенная частота транзакций"); }
+        }
+
+        if (spanHours !== null && txCount >= 10) {
+          if (spanHours <= 0.25) { score += 25; reasons.push("Много транзакций за короткое время"); }
+          else if (spanHours <= 1.0) { score += 10; reasons.push("Активность сконцентрирована во времени"); }
+        }
+
+        if (repeatRatio !== null) {
+          if (repeatRatio >= 0.6 && txCount >= 10) { score += 20; reasons.push("Повторяющиеся суммы/паттерны"); }
+          else if (repeatRatio >= 0.4 && txCount >= 10) { score += 10; reasons.push("Частично повторяющиеся суммы"); }
+        }
+
+        if (smallFraction !== null && smallFraction >= 0.7 && txCount >= 10) { score += 10; reasons.push("Большая доля микротранзакций"); }
+        if (largeFraction !== null && largeFraction >= 0.7 && txCount >= 10) { score += 5; reasons.push("Большая доля крупных переводов"); }
+        if (txCount < 5) reasons.push("Мало данных, оценка неточная");
+
+        score = Math.max(0, Math.min(score, 100));
+        const assessment = score >= 60 ? "Bot" : "Human";
+
+        const features = {
+          tx_count: txCount,
+          span_hours: spanHours,
+          tx_per_hour: txPerHour,
+          unique_value_ratio: uniqueRatio,
+          repeat_value_ratio: repeatRatio,
+          small_value_fraction: smallFraction,
+          large_value_fraction: largeFraction,
+        };
+
+        return { wallet, assessment, score, reasons: reasons.slice(0,6), features, mode: "local" };
+      }
+
+      function setBadge(result) {
+        const a = result && result.assessment ? result.assessment : "—";
+        badge.textContent = a;
+        badge.className = 'pill ' + (a === 'Bot' ? 'b' : (a === 'Human' ? 'h' : ''));
+        scoreEl.textContent = (typeof result.score === 'number') ? `score: ${result.score}/100` : '';
+      }
+
+      document.getElementById('run').addEventListener('click', async () => {
+        out.textContent = '...';
+        setBadge({});
+        const address = addr.value.trim();
+        if (!address) {
+          out.textContent = 'Введите адрес';
+          return;
+        }
+
+        let txs = defaultMockTransactions();
+        const raw = txjson.value.trim();
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) txs = parsed.filter(x => x && typeof x === 'object');
+          } catch (e) {
+            out.textContent = 'Невалидный JSON транзакций';
+            return;
+          }
+        }
+
+        const result = scoreWalletLocally(address, txs);
+        setBadge(result);
+        out.textContent = JSON.stringify(result, null, 2);
+      });
+    </script>
+  </body>
+</html>
