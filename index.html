@@ -326,6 +326,7 @@
             <div class="actions" style="margin-top:22px">
               <button id="run" class="btn primary">Analyze</button>
               <button id="example" class="btn">Example</button>
+              <button id="bot" class="btn">Bot example</button>
               <button id="clear" class="btn ghost">Clear</button>
             </div>
           </div>
@@ -338,7 +339,7 @@
             <div class="body">
               <textarea id="txjson" class="textarea" spellcheck="false" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
               <div class="hint">
-                If empty, a small example dataset is used. Timestamp format: <code>2024-03-12T09:15:00Z</code>.
+                Leave empty to auto-fetch recent transactions on Base Sepolia. Timestamp format: <code>2024-03-12T09:15:00Z</code>.
               </div>
             </div>
           </details>
@@ -452,6 +453,7 @@
       const jsonMeta = document.getElementById('jsonMeta');
       const btnRun = document.getElementById('run');
       const btnExample = document.getElementById('example');
+      const btnBot = document.getElementById('bot');
       const btnClear = document.getElementById('clear');
       const btnCopy = document.getElementById('copy');
       const mTxCount = document.getElementById('mTxCount');
@@ -482,6 +484,16 @@
           { tx_hash: "0xdef456...", value: 10.2, timestamp: "2024-03-11T14:30:00Z" },
           { tx_hash: "0x789ghi...", value: 0.01, timestamp: "2024-03-12T09:15:00Z" },
         ];
+      }
+
+      function botMockTransactions() {
+        const txs = [];
+        const start = new Date("2024-03-12T09:00:00Z").getTime();
+        for (let i = 0; i < 80; i++) {
+          const t = new Date(start + i * 25 * 1000).toISOString().replace('.000Z','Z');
+          txs.push({ tx_hash: `0xbot${String(i).padStart(2,'0')}...`, value: 0.01, timestamp: t });
+        }
+        return txs;
       }
 
       function scoreWalletLocally(wallet, txs) {
@@ -607,13 +619,37 @@
 
       function parseTransactions(raw) {
         const t = (raw || '').trim();
-        if (!t) return { ok: true, txs: defaultMockTransactions(), note: 'Using example transactions' };
+        if (!t) return { ok: true, txs: null, note: 'Auto-fetching transactions…' };
         let parsed;
         try { parsed = JSON.parse(t); }
         catch { return { ok: false, error: 'Invalid transactions JSON' }; }
         if (!Array.isArray(parsed)) return { ok: false, error: 'Transactions JSON must be a list/array' };
         const txs = parsed.filter(x => x && typeof x === 'object');
         return { ok: true, txs, note: `Transactions: ${txs.length}` };
+      }
+
+      async function fetchTransactions(address, limit) {
+        if (location.protocol === 'file:') {
+          return { ok: false, error: 'Auto-fetch is unavailable when opening the file locally. Use the deployed Vercel URL.' };
+        }
+        const url = `/api/txs?address=${encodeURIComponent(address)}&limit=${encodeURIComponent(String(limit || 200))}`;
+        let r;
+        try {
+          r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        } catch (e) {
+          return { ok: false, error: 'Network error while fetching transactions.' };
+        }
+        let data = null;
+        try { data = await r.json(); } catch { data = null; }
+        if (!r.ok) {
+          const hint = data && data.hint ? ` ${data.hint}` : '';
+          const err = data && data.error ? data.error : `HTTP ${r.status}`;
+          return { ok: false, error: `Failed to fetch transactions: ${err}.${hint}` };
+        }
+        if (!data || data.ok !== true || !Array.isArray(data.txs)) {
+          return { ok: false, error: 'Invalid /api/txs response.' };
+        }
+        return { ok: true, txs: data.txs, meta: data };
       }
 
       function loadState() {
@@ -660,7 +696,8 @@
         setStatus({}, 'Analyzing…', 'info');
         setOutput(null);
 
-        const v = validateAddress(addr.value);
+        const address = addr.value.trim();
+        const v = validateAddress(address);
         if (!v.ok) {
           setStatus({}, v.message, 'error');
           return;
@@ -672,8 +709,25 @@
           return;
         }
 
-        const result = scoreWalletLocally(addr.value.trim(), p.txs);
-        const message = v.message || p.note || 'Done';
+        let txs = p.txs;
+        let note = p.note;
+        if (txs === null) {
+          setStatus({}, 'Fetching transactions from Base Sepolia…', 'info');
+          const fetched = await fetchTransactions(address, 200);
+          if (!fetched.ok) {
+            setStatus({}, fetched.error, 'error');
+            return;
+          }
+          txs = fetched.txs;
+          if (!txs.length) {
+            setStatus({}, 'No transactions found for this address on Base Sepolia.', 'error');
+            return;
+          }
+          note = `Fetched ${txs.length} transactions (Base Sepolia)`;
+        }
+
+        const result = scoreWalletLocally(address, txs);
+        const message = v.message || note || 'Done';
         setStatus(result, message, 'info');
         setOutput(result);
       }
@@ -685,6 +739,11 @@
       btnExample.addEventListener('click', () => {
         addr.value = '0xfa13a15a2fb420e2313918496b5b05427ed8e31a';
         txjson.value = JSON.stringify(defaultMockTransactions(), null, 2);
+        saveState();
+      });
+      btnBot.addEventListener('click', () => {
+        addr.value = '0x0000000000000000000000000000000000000000';
+        txjson.value = JSON.stringify(botMockTransactions(), null, 2);
         saveState();
       });
       btnClear.addEventListener('click', () => {
