@@ -334,7 +334,7 @@
           <details class="panel">
             <summary>
               <span>Transactions JSON (optional)</span>
-              <span class="label">list of objects with value and timestamp</span>
+              <span class="label" id="txMode">Auto-fetch</span>
             </summary>
             <div class="body">
               <textarea id="txjson" class="textarea" spellcheck="false" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
@@ -448,6 +448,7 @@
       const scoreBar = document.getElementById('scoreBar');
       const addr = document.getElementById('address');
       const txjson = document.getElementById('txjson');
+      const txMode = document.getElementById('txMode');
       const reasonsEl = document.getElementById('reasons');
       const msg = document.getElementById('msg');
       const jsonMeta = document.getElementById('jsonMeta');
@@ -548,7 +549,7 @@
         if (txCount < 5) reasons.push("Not enough data; low-confidence estimate");
 
         score = Math.max(0, Math.min(score, 100));
-        const assessment = score >= 60 ? "Bot" : "Human";
+        const assessment = txCount < 5 ? "Unknown" : (score >= 60 ? "Bot" : "Human");
 
         const features = {
           tx_count: txCount,
@@ -625,7 +626,22 @@
         catch { return { ok: false, error: 'Invalid transactions JSON' }; }
         if (!Array.isArray(parsed)) return { ok: false, error: 'Transactions JSON must be a list/array' };
         const txs = parsed.filter(x => x && typeof x === 'object');
-        return { ok: true, txs, note: `Transactions: ${txs.length}` };
+        return { ok: true, txs, note: `Using pasted transactions: ${txs.length} (auto-fetch disabled)` };
+      }
+
+      function updateTxMode() {
+        if (!txMode) return;
+        const t = (txjson.value || '').trim();
+        if (!t) {
+          txMode.textContent = 'Auto-fetch';
+          return;
+        }
+        try {
+          const parsed = JSON.parse(t);
+          txMode.textContent = Array.isArray(parsed) ? `Custom JSON (${parsed.length})` : 'Custom JSON';
+        } catch {
+          txMode.textContent = 'Custom JSON (invalid)';
+        }
       }
 
       async function fetchTransactions(address, limit) {
@@ -659,6 +675,7 @@
           if (a) addr.value = a;
           if (t) txjson.value = t;
         } catch {}
+        updateTxMode();
       }
 
       function saveState() {
@@ -666,6 +683,7 @@
           localStorage.setItem('wallet_reputation_address', addr.value.trim());
           localStorage.setItem('wallet_reputation_txs', txjson.value);
         } catch {}
+        updateTxMode();
       }
 
       async function copyText(text) {
@@ -733,6 +751,9 @@
       btnRun.addEventListener('click', run);
       addr.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') run();
+      });
+      txjson.addEventListener('input', () => {
+        saveState();
       });
       btnExample.addEventListener('click', () => {
         addr.value = '0xfa13a15a2fb420e2313918496b5b05427ed8e31a';
