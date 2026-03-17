@@ -719,11 +719,9 @@
             return;
           }
           txs = fetched.txs;
-          if (!txs.length) {
-            setStatus({}, 'No transactions found for this address on Base Sepolia.', 'error');
-            return;
-          }
-          note = `Fetched ${txs.length} transactions (Base Sepolia)`;
+          note = txs.length
+            ? `Fetched ${txs.length} transactions (Base Sepolia)`
+            : 'No transactions found on Base Sepolia (very low confidence)';
         }
 
         const result = scoreWalletLocally(address, txs);
