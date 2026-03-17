@@ -5,45 +5,258 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Wallet Reputation</title>
     <style>
-      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:24px;max-width:960px}
+      :root{
+        --bg0:#070a14;
+        --bg1:#0a0f20;
+        --card:rgba(255,255,255,.06);
+        --card2:rgba(255,255,255,.08);
+        --stroke:rgba(255,255,255,.12);
+        --text:#e8ecff;
+        --muted:rgba(232,236,255,.72);
+        --muted2:rgba(232,236,255,.55);
+        --good:#2ee59d;
+        --bad:#ff5f6d;
+        --warn:#ffd166;
+        --accent:#7c5cff;
+        --shadow:0 18px 50px rgba(0,0,0,.55);
+        --radius:16px;
+      }
+
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        color:var(--text);
+        font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+        background:
+          radial-gradient(1200px 700px at 10% -10%, rgba(124,92,255,.35) 0%, rgba(124,92,255,0) 60%),
+          radial-gradient(900px 600px at 95% 10%, rgba(46,229,157,.18) 0%, rgba(46,229,157,0) 55%),
+          radial-gradient(900px 600px at 70% 110%, rgba(255,95,109,.18) 0%, rgba(255,95,109,0) 55%),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+      }
+
+      a{color:inherit}
       input,textarea,button{font:inherit}
-      textarea{width:100%;min-height:180px}
-      .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-      .muted{color:#666}
-      pre{background:#0b1020;color:#e6e6e6;padding:12px;border-radius:8px;overflow:auto}
-      .card{border:1px solid #ddd;border-radius:10px;padding:14px}
-      .pill{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid #ddd}
-      .pill.h{background:#e9f7ef}
-      .pill.b{background:#fdecea}
+      textarea{width:100%;min-height:180px;resize:vertical}
+
+      .wrap{max-width:1060px;margin:0 auto;padding:28px 20px 40px}
+      .top{
+        display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap
+      }
+      .brand{display:flex;align-items:center;gap:12px}
+      .logo{
+        width:44px;height:44px;border-radius:14px;
+        background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(46,229,157,.9));
+        box-shadow:0 10px 30px rgba(124,92,255,.25);
+      }
+      .title{margin:0;font-size:30px;letter-spacing:.2px}
+      .subtitle{margin:6px 0 0;color:var(--muted);max-width:720px;line-height:1.45}
+
+      .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:18px}
+      @media (max-width:980px){.grid{grid-template-columns:1fr}}
+
+      .card{
+        background:linear-gradient(180deg, var(--card), rgba(255,255,255,.03));
+        border:1px solid var(--stroke);
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        padding:16px;
+        backdrop-filter: blur(10px);
+      }
+
+      .card h2{margin:0 0 10px;font-size:16px;color:var(--muted)}
+      .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+      .field{display:flex;flex-direction:column;gap:8px;flex:1;min-width:260px}
+      .label{font-size:12px;color:var(--muted2);letter-spacing:.2px}
+
+      .input, .textarea{
+        width:100%;
+        color:var(--text);
+        background:rgba(0,0,0,.25);
+        border:1px solid rgba(255,255,255,.14);
+        border-radius:14px;
+        padding:12px 12px;
+        outline:none;
+      }
+      .input:focus, .textarea:focus{border-color:rgba(124,92,255,.6);box-shadow:0 0 0 4px rgba(124,92,255,.12)}
+      .textarea{min-height:190px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12.5px;line-height:1.55}
+
+      .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+      .btn{
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(255,255,255,.06);
+        color:var(--text);
+        padding:10px 12px;
+        border-radius:14px;
+        cursor:pointer;
+        transition:transform .08s ease, background .12s ease, border-color .12s ease;
+      }
+      .btn:hover{background:rgba(255,255,255,.10)}
+      .btn:active{transform:translateY(1px)}
+      .btn.primary{
+        border-color:rgba(124,92,255,.55);
+        background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(124,92,255,.55));
+      }
+      .btn.primary:hover{background:linear-gradient(135deg, rgba(124,92,255,1), rgba(124,92,255,.65))}
+      .btn.ghost{background:transparent}
+
+      .hint{color:var(--muted2);font-size:12px;line-height:1.45;margin-top:10px}
+      .hint code{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);padding:2px 6px;border-radius:8px}
+
+      .status{
+        display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+        padding:12px 12px;border-radius:14px;
+        background:rgba(0,0,0,.20);
+        border:1px solid rgba(255,255,255,.12);
+      }
+      .badge{
+        display:inline-flex;align-items:center;gap:8px;
+        border-radius:999px;
+        padding:7px 10px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(255,255,255,.06);
+        font-weight:600;
+      }
+      .dot{width:9px;height:9px;border-radius:50%}
+      .dot.h{background:var(--good)}
+      .dot.b{background:var(--bad)}
+      .dot.w{background:var(--warn)}
+
+      .metric{display:flex;flex-direction:column;gap:6px;min-width:200px}
+      .metric .k{font-size:12px;color:var(--muted2)}
+      .metric .v{font-size:18px;font-weight:700}
+      .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);overflow:hidden}
+      .bar > div{height:100%;width:0%;background:linear-gradient(90deg, rgba(46,229,157,.95), rgba(124,92,255,.95));border-radius:999px}
+
+      .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+      .chip{font-size:12px;color:var(--muted);padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+
+      .panel{margin-top:14px}
+      .panel summary{
+        cursor:pointer;
+        color:var(--muted);
+        list-style:none;
+        display:flex;align-items:center;justify-content:space-between;gap:12px;
+        padding:10px 12px;
+        border:1px solid rgba(255,255,255,.12);
+        border-radius:14px;
+        background:rgba(255,255,255,.04);
+      }
+      .panel summary::-webkit-details-marker{display:none}
+      .panel .body{margin-top:10px}
+      pre{
+        margin:0;
+        background:rgba(6,10,26,.75);
+        border:1px solid rgba(255,255,255,.10);
+        color:#e8ecff;
+        padding:12px;
+        border-radius:14px;
+        overflow:auto;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+        font-size:12.5px;
+        line-height:1.55;
+      }
+
+      .footer{margin-top:18px;color:var(--muted2);font-size:12px;line-height:1.4}
+      .err{color:#ffd1d6}
     </style>
   </head>
   <body>
-    <h1>Reputation Analyzer</h1>
-    <p class="muted">Статический сайт (Vercel). Локальный скоринг по эвристикам, без токенов.</p>
-
-    <div class="card">
-      <div class="row">
-        <label>Адрес:</label>
-        <input id="address" style="flex:1;min-width:340px" placeholder="0x..." />
-        <button id="run">Проверить</button>
+    <div class="wrap">
+      <div class="top">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>
+            <h1 class="title">Reputation Analyzer</h1>
+            <p class="subtitle">Красивый простой сайт на Vercel. Считает репутацию кошелька локально по эвристикам, без токенов.</p>
+          </div>
+        </div>
       </div>
-      <p class="muted">Опционально: вставь транзакции JSON (list объектов с value и timestamp в ISO).</p>
-      <textarea id="txjson" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
-    </div>
 
-    <h2>Результат</h2>
-    <div class="row" style="margin:8px 0 12px">
-      <span id="badge" class="pill">—</span>
-      <span id="score" class="muted"></span>
+      <div class="grid">
+        <div class="card">
+          <h2>Ввод</h2>
+          <div class="row">
+            <div class="field">
+              <div class="label">Адрес кошелька</div>
+              <input id="address" class="input" placeholder="0x..." autocomplete="off" />
+            </div>
+            <div class="actions" style="margin-top:22px">
+              <button id="run" class="btn primary">Проверить</button>
+              <button id="example" class="btn">Пример</button>
+              <button id="clear" class="btn ghost">Очистить</button>
+            </div>
+          </div>
+
+          <details class="panel" open>
+            <summary>
+              <span>Транзакции JSON (опционально)</span>
+              <span class="label">list объектов с value и timestamp</span>
+            </summary>
+            <div class="body">
+              <textarea id="txjson" class="textarea" spellcheck="false" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
+              <div class="hint">
+                Если не заполнять, используется небольшой пример. Формат timestamp: <code>2024-03-12T09:15:00Z</code>.
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="card">
+          <h2>Результат</h2>
+          <div id="status" class="status">
+            <div class="badge" id="badge">
+              <span class="dot w" id="dot"></span>
+              <span id="badgeText">—</span>
+            </div>
+            <div class="metric">
+              <div class="k">score</div>
+              <div class="v"><span id="scoreNum">—</span><span style="color:var(--muted2);font-weight:600"> /100</span></div>
+              <div class="bar"><div id="scoreBar"></div></div>
+            </div>
+          </div>
+
+          <div id="reasons" class="chips"></div>
+
+          <details class="panel" open>
+            <summary>
+              <span>JSON результата</span>
+              <span class="label" id="jsonMeta">—</span>
+            </summary>
+            <div class="body">
+              <div class="row" style="justify-content:space-between;margin-bottom:10px">
+                <div class="label" id="msg">—</div>
+                <div class="actions">
+                  <button id="copy" class="btn">Копировать</button>
+                </div>
+              </div>
+              <pre id="out">—</pre>
+            </div>
+          </details>
+
+          <div class="footer">
+            Работает полностью на фронтенде. Позже можно подключить реальную историю транзакций и/или LLM.
+          </div>
+        </div>
+      </div>
     </div>
-    <pre id="out">—</pre>
 
     <script>
       const out = document.getElementById('out');
       const badge = document.getElementById('badge');
-      const scoreEl = document.getElementById('score');
+      const badgeText = document.getElementById('badgeText');
+      const dot = document.getElementById('dot');
+      const scoreNum = document.getElementById('scoreNum');
+      const scoreBar = document.getElementById('scoreBar');
       const addr = document.getElementById('address');
       const txjson = document.getElementById('txjson');
+      const reasonsEl = document.getElementById('reasons');
+      const msg = document.getElementById('msg');
+      const jsonMeta = document.getElementById('jsonMeta');
+      const btnRun = document.getElementById('run');
+      const btnExample = document.getElementById('example');
+      const btnClear = document.getElementById('clear');
+      const btnCopy = document.getElementById('copy');
 
       function parseIsoTimestamp(v) {
         if (typeof v !== 'string' || !v.trim()) return null;
@@ -137,38 +350,144 @@
         return { wallet, assessment, score, reasons: reasons.slice(0,6), features, mode: "local" };
       }
 
-      function setBadge(result) {
+      function setStatus(result, message, level) {
         const a = result && result.assessment ? result.assessment : "—";
-        badge.textContent = a;
-        badge.className = 'pill ' + (a === 'Bot' ? 'b' : (a === 'Human' ? 'h' : ''));
-        scoreEl.textContent = (typeof result.score === 'number') ? `score: ${result.score}/100` : '';
+        const s = (typeof result.score === 'number') ? result.score : null;
+
+        badgeText.textContent = a;
+        scoreNum.textContent = (s === null) ? "—" : String(s);
+        scoreBar.style.width = (s === null) ? "0%" : `${Math.max(0, Math.min(100, s))}%`;
+
+        dot.className = 'dot ' + (a === 'Bot' ? 'b' : (a === 'Human' ? 'h' : 'w'));
+        msg.textContent = message || '—';
+        msg.className = (level === 'error') ? 'label err' : 'label';
+
+        reasonsEl.innerHTML = '';
+        const reasons = (result && Array.isArray(result.reasons)) ? result.reasons : [];
+        for (const r of reasons) {
+          const el = document.createElement('div');
+          el.className = 'chip';
+          el.textContent = r;
+          reasonsEl.appendChild(el);
+        }
       }
 
-      document.getElementById('run').addEventListener('click', async () => {
-        out.textContent = '...';
-        setBadge({});
-        const address = addr.value.trim();
-        if (!address) {
-          out.textContent = 'Введите адрес';
+      function setOutput(obj) {
+        const text = obj ? JSON.stringify(obj, null, 2) : '—';
+        out.textContent = text;
+        jsonMeta.textContent = obj && obj.features && typeof obj.features.tx_count === 'number'
+          ? `tx_count: ${obj.features.tx_count}`
+          : '—';
+      }
+
+      function validateAddress(value) {
+        const v = (value || '').trim();
+        if (!v) return { ok: false, message: 'Введите адрес' };
+        if (/^0x[a-fA-F0-9]{40}$/.test(v)) return { ok: true, message: null };
+        return { ok: true, message: 'Адрес выглядит нестандартно, но я попробую посчитать' };
+      }
+
+      function parseTransactions(raw) {
+        const t = (raw || '').trim();
+        if (!t) return { ok: true, txs: defaultMockTransactions(), note: 'Использую пример транзакций' };
+        let parsed;
+        try { parsed = JSON.parse(t); }
+        catch { return { ok: false, error: 'Невалидный JSON транзакций' }; }
+        if (!Array.isArray(parsed)) return { ok: false, error: 'TRANSACTIONS_JSON должен быть массивом (list)' };
+        const txs = parsed.filter(x => x && typeof x === 'object');
+        return { ok: true, txs, note: `Транзакций: ${txs.length}` };
+      }
+
+      function loadState() {
+        try {
+          const a = localStorage.getItem('wallet_reputation_address');
+          const t = localStorage.getItem('wallet_reputation_txs');
+          if (a) addr.value = a;
+          if (t) txjson.value = t;
+        } catch {}
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem('wallet_reputation_address', addr.value.trim());
+          localStorage.setItem('wallet_reputation_txs', txjson.value);
+        } catch {}
+      }
+
+      async function copyText(text) {
+        if (!text) return false;
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+          } catch {
+            return false;
+          }
+        }
+      }
+
+      async function run() {
+        saveState();
+        setStatus({}, 'Считаю...', 'info');
+        setOutput(null);
+
+        const v = validateAddress(addr.value);
+        if (!v.ok) {
+          setStatus({}, v.message, 'error');
           return;
         }
 
-        let txs = defaultMockTransactions();
-        const raw = txjson.value.trim();
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) txs = parsed.filter(x => x && typeof x === 'object');
-          } catch (e) {
-            out.textContent = 'Невалидный JSON транзакций';
-            return;
-          }
+        const p = parseTransactions(txjson.value);
+        if (!p.ok) {
+          setStatus({}, p.error, 'error');
+          return;
         }
 
-        const result = scoreWalletLocally(address, txs);
-        setBadge(result);
-        out.textContent = JSON.stringify(result, null, 2);
+        const result = scoreWalletLocally(addr.value.trim(), p.txs);
+        const message = v.message || p.note || 'Готово';
+        setStatus(result, message, 'info');
+        setOutput(result);
+      }
+
+      btnRun.addEventListener('click', run);
+      addr.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') run();
       });
+      btnExample.addEventListener('click', () => {
+        addr.value = '0xfa13a15a2fb420e2313918496b5b05427ed8e31a';
+        txjson.value = JSON.stringify(defaultMockTransactions(), null, 2);
+        saveState();
+      });
+      btnClear.addEventListener('click', () => {
+        addr.value = '';
+        txjson.value = '';
+        saveState();
+        setStatus({}, '—', 'info');
+        setOutput(null);
+      });
+      btnCopy.addEventListener('click', async () => {
+        const ok = await copyText(out.textContent);
+        setStatus(
+          JSON.parse(out.textContent || '{}'),
+          ok ? 'JSON скопирован' : 'Не получилось скопировать',
+          ok ? 'info' : 'error'
+        );
+      });
+
+      loadState();
+      setStatus({}, '—', 'info');
+      setOutput(null);
     </script>
   </body>
 </html>
