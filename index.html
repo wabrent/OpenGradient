@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -44,6 +44,19 @@
         display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap
       }
       .brand{display:flex;align-items:center;gap:12px}
+      .nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+      .linkbtn{
+        display:inline-flex;align-items:center;gap:8px;
+        padding:9px 10px;border-radius:14px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(255,255,255,.06);
+        text-decoration:none;
+        color:var(--text);
+        transition:transform .08s ease, background .12s ease, border-color .12s ease;
+      }
+      .linkbtn:hover{background:rgba(255,255,255,.10)}
+      .linkbtn:active{transform:translateY(1px)}
+      .ico{width:16px;height:16px;opacity:.95}
       .logo{
         width:44px;height:44px;border-radius:14px;
         background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(46,229,157,.9));
@@ -168,42 +181,56 @@
           <div class="logo"></div>
           <div>
             <h1 class="title">Reputation Analyzer</h1>
-            <p class="subtitle">Красивый простой сайт на Vercel. Считает репутацию кошелька локально по эвристикам, без токенов.</p>
+            <p class="subtitle">A clean Vercel-ready UI that estimates wallet reputation with local heuristics. No tokens required.</p>
           </div>
+        </div>
+        <div class="nav">
+          <a class="linkbtn" href="https://www.opengradient.ai/" target="_blank" rel="noreferrer">
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z" stroke="currentColor" stroke-width="2"/><path d="M8.5 13.5c1.1 1.2 2.4 1.8 3.5 1.8s2.4-.6 3.5-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 10h.01M15 10h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span>OpenGradient</span>
+          </a>
+          <a class="linkbtn" href="https://x.com/OpenGradient" target="_blank" rel="noreferrer">
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M18.9 2H22l-6.8 7.8L23 22h-6.2l-4.9-6.4L6.3 22H3l7.3-8.4L1 2h6.3l4.4 5.9L18.9 2Z" fill="currentColor"/></svg>
+            <span>Project X</span>
+          </a>
+          <a class="linkbtn" href="https://x.com/graanit2" target="_blank" rel="noreferrer">
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M18.9 2H22l-6.8 7.8L23 22h-6.2l-4.9-6.4L6.3 22H3l7.3-8.4L1 2h6.3l4.4 5.9L18.9 2Z" fill="currentColor"/></svg>
+            <span>Dev: @graanit2</span>
+          </a>
         </div>
       </div>
 
       <div class="grid">
         <div class="card">
-          <h2>Ввод</h2>
+          <h2>Input</h2>
           <div class="row">
             <div class="field">
-              <div class="label">Адрес кошелька</div>
-              <input id="address" class="input" placeholder="0x..." autocomplete="off" />
+              <div class="label">Wallet address</div>
+              <input id="address" class="input" placeholder="0x…" autocomplete="off" />
             </div>
             <div class="actions" style="margin-top:22px">
-              <button id="run" class="btn primary">Проверить</button>
-              <button id="example" class="btn">Пример</button>
-              <button id="clear" class="btn ghost">Очистить</button>
+              <button id="run" class="btn primary">Analyze</button>
+              <button id="example" class="btn">Example</button>
+              <button id="clear" class="btn ghost">Clear</button>
             </div>
           </div>
 
           <details class="panel" open>
             <summary>
-              <span>Транзакции JSON (опционально)</span>
-              <span class="label">list объектов с value и timestamp</span>
+              <span>Transactions JSON (optional)</span>
+              <span class="label">list of objects with value and timestamp</span>
             </summary>
             <div class="body">
               <textarea id="txjson" class="textarea" spellcheck="false" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
               <div class="hint">
-                Если не заполнять, используется небольшой пример. Формат timestamp: <code>2024-03-12T09:15:00Z</code>.
+                If empty, a small example dataset is used. Timestamp format: <code>2024-03-12T09:15:00Z</code>.
               </div>
             </div>
           </details>
         </div>
 
         <div class="card">
-          <h2>Результат</h2>
+          <h2>Result</h2>
           <div id="status" class="status">
             <div class="badge" id="badge">
               <span class="dot w" id="dot"></span>
@@ -220,14 +247,14 @@
 
           <details class="panel" open>
             <summary>
-              <span>JSON результата</span>
+              <span>Result JSON</span>
               <span class="label" id="jsonMeta">—</span>
             </summary>
             <div class="body">
               <div class="row" style="justify-content:space-between;margin-bottom:10px">
                 <div class="label" id="msg">—</div>
                 <div class="actions">
-                  <button id="copy" class="btn">Копировать</button>
+                  <button id="copy" class="btn">Copy</button>
                 </div>
               </div>
               <pre id="out">—</pre>
@@ -235,7 +262,7 @@
           </details>
 
           <div class="footer">
-            Работает полностью на фронтенде. Позже можно подключить реальную историю транзакций и/или LLM.
+            Runs fully in the browser. Later you can plug in real transaction history and/or an LLM.
           </div>
         </div>
       </div>
@@ -312,27 +339,27 @@
         let score = 0;
         const reasons = [];
 
-        if (txCount >= 50) { score += 20; reasons.push("Очень много транзакций"); }
-        else if (txCount >= 20) { score += 10; reasons.push("Много транзакций"); }
+        if (txCount >= 50) { score += 20; reasons.push("Very high number of transactions"); }
+        else if (txCount >= 20) { score += 10; reasons.push("High number of transactions"); }
 
         if (txPerHour !== null) {
-          if (txPerHour >= 30) { score += 30; reasons.push("Высокая частота транзакций (burst)"); }
-          else if (txPerHour >= 10) { score += 15; reasons.push("Повышенная частота транзакций"); }
+          if (txPerHour >= 30) { score += 30; reasons.push("High transaction frequency (burst)"); }
+          else if (txPerHour >= 10) { score += 15; reasons.push("Elevated transaction frequency"); }
         }
 
         if (spanHours !== null && txCount >= 10) {
-          if (spanHours <= 0.25) { score += 25; reasons.push("Много транзакций за короткое время"); }
-          else if (spanHours <= 1.0) { score += 10; reasons.push("Активность сконцентрирована во времени"); }
+          if (spanHours <= 0.25) { score += 25; reasons.push("Many transactions in a short time window"); }
+          else if (spanHours <= 1.0) { score += 10; reasons.push("Activity is time-concentrated"); }
         }
 
         if (repeatRatio !== null) {
-          if (repeatRatio >= 0.6 && txCount >= 10) { score += 20; reasons.push("Повторяющиеся суммы/паттерны"); }
-          else if (repeatRatio >= 0.4 && txCount >= 10) { score += 10; reasons.push("Частично повторяющиеся суммы"); }
+          if (repeatRatio >= 0.6 && txCount >= 10) { score += 20; reasons.push("Repeated amounts/patterns"); }
+          else if (repeatRatio >= 0.4 && txCount >= 10) { score += 10; reasons.push("Partially repeated amounts"); }
         }
 
-        if (smallFraction !== null && smallFraction >= 0.7 && txCount >= 10) { score += 10; reasons.push("Большая доля микротранзакций"); }
-        if (largeFraction !== null && largeFraction >= 0.7 && txCount >= 10) { score += 5; reasons.push("Большая доля крупных переводов"); }
-        if (txCount < 5) reasons.push("Мало данных, оценка неточная");
+        if (smallFraction !== null && smallFraction >= 0.7 && txCount >= 10) { score += 10; reasons.push("Large share of micro-transactions"); }
+        if (largeFraction !== null && largeFraction >= 0.7 && txCount >= 10) { score += 5; reasons.push("Large share of high-value transfers"); }
+        if (txCount < 5) reasons.push("Not enough data; low-confidence estimate");
 
         score = Math.max(0, Math.min(score, 100));
         const assessment = score >= 60 ? "Bot" : "Human";
@@ -382,20 +409,20 @@
 
       function validateAddress(value) {
         const v = (value || '').trim();
-        if (!v) return { ok: false, message: 'Введите адрес' };
+        if (!v) return { ok: false, message: 'Enter a wallet address' };
         if (/^0x[a-fA-F0-9]{40}$/.test(v)) return { ok: true, message: null };
-        return { ok: true, message: 'Адрес выглядит нестандартно, но я попробую посчитать' };
+        return { ok: true, message: 'Address looks non-standard; attempting to score anyway' };
       }
 
       function parseTransactions(raw) {
         const t = (raw || '').trim();
-        if (!t) return { ok: true, txs: defaultMockTransactions(), note: 'Использую пример транзакций' };
+        if (!t) return { ok: true, txs: defaultMockTransactions(), note: 'Using example transactions' };
         let parsed;
         try { parsed = JSON.parse(t); }
-        catch { return { ok: false, error: 'Невалидный JSON транзакций' }; }
-        if (!Array.isArray(parsed)) return { ok: false, error: 'TRANSACTIONS_JSON должен быть массивом (list)' };
+        catch { return { ok: false, error: 'Invalid transactions JSON' }; }
+        if (!Array.isArray(parsed)) return { ok: false, error: 'Transactions JSON must be a list/array' };
         const txs = parsed.filter(x => x && typeof x === 'object');
-        return { ok: true, txs, note: `Транзакций: ${txs.length}` };
+        return { ok: true, txs, note: `Transactions: ${txs.length}` };
       }
 
       function loadState() {
@@ -439,7 +466,7 @@
 
       async function run() {
         saveState();
-        setStatus({}, 'Считаю...', 'info');
+        setStatus({}, 'Analyzing…', 'info');
         setOutput(null);
 
         const v = validateAddress(addr.value);
@@ -455,7 +482,7 @@
         }
 
         const result = scoreWalletLocally(addr.value.trim(), p.txs);
-        const message = v.message || p.note || 'Готово';
+        const message = v.message || p.note || 'Done';
         setStatus(result, message, 'info');
         setOutput(result);
       }
@@ -480,7 +507,7 @@
         const ok = await copyText(out.textContent);
         setStatus(
           JSON.parse(out.textContent || '{}'),
-          ok ? 'JSON скопирован' : 'Не получилось скопировать',
+          ok ? 'JSON copied' : 'Copy failed',
           ok ? 'info' : 'error'
         );
       });
