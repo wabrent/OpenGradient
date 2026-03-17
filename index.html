@@ -64,6 +64,7 @@
         background:rgba(255,255,255,.70);
         border:1px solid rgba(7,53,70,.15);
       }
+      .logo img{width:26px;height:26px;display:block}
       .title{margin:0;font-size:34px;letter-spacing:-.3px}
       .subtitle{margin:8px 0 0;color:var(--muted);max-width:760px;line-height:1.5}
 
@@ -234,10 +235,7 @@
       <div class="top">
         <div class="brand">
           <div class="logo" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2.6 20 7.2v9.6l-8 4.6-8-4.6V7.2L12 2.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M7.5 10.2h9M7.5 13.8h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
+            <img alt="" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgdmlld0JveD0iMCAwIDUwMCA1MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF82MzIzXzIxNDApIj4KPHBhdGggZD0iTTM1MS4yODUgMTkzLjI4OEMzNDQuNzQ3IDE4Ni45MDEgMzM2LjExMyAxODMuMzgxIDMyNi45NzQgMTgzLjM4MUgzMTYuNTAxVjE3Mi45QzMxNi41MDEgMTYzLjc1OCAzMTIuOTg1IDE1NS4xMiAzMDYuNjAxIDE0OC41NzZMMjc0LjMxNiAxMTUuNDkzQzI2Ny43MTMgMTA4LjcyOCAyNTguODcgMTA1IDI0OS40MTkgMTA1QzIzOS45NjggMTA1IDIzMS4xMjUgMTA4LjcyOCAyMjQuNTIyIDExNS40OTNMMTkyLjIzOCAxNDguNTc2QzE4NS44NTUgMTU1LjExOCAxODIuMzM3IDE2My43NTYgMTgyLjMzNyAxNzIuOVYxODMuMzgxSDE3MS44NjFDMTYyLjcyMyAxODMuMzgxIDE1NC4wOSAxODYuOTAxIDE0Ny41NTEgMTkzLjI4OEwxMTQuNDg3IDIyNS41ODlDMTA3LjcyNSAyMzIuMTk3IDEwNCAyNDEuMDQ1IDEwNCAyNTAuNTAyQzEwNC4wMDIgMjU5Ljk2IDEwNy43MjUgMjY4LjgwNyAxMTQuNDg3IDI3NS40MTJMMTQ3LjU1MyAzMDcuNzE1QzE1NC4wOTEgMzE0LjEwMiAxNjIuNzIzIDMxNy42MiAxNzEuODYxIDMxNy42MkgxODIuMzM3VjMyOC4xQzE4Mi4zMzcgMzM3LjI0NCAxODUuODU1IDM0NS44ODIgMTkyLjIzOCAzNTIuNDIzTDIyNC41MjEgMzg1LjUwOEMyMzEuMTI1IDM5Mi4yNzQgMjM5Ljk2OCAzOTYgMjQ5LjQxOSAzOTZDMjU4Ljg3IDM5NiAyNjcuNzEzIDM5Mi4yNzQgMjc0LjMxNiAzODUuNTA4TDMwNi42MDEgMzUyLjQyM0MzMTIuOTg0IDM0NS44ODEgMzE2LjUgMzM3LjI0MiAzMTYuNSAzMjguMVYzMTcuNjJIMzI2Ljk3NEMzMzYuMTEyIDMxNy42MiAzNDQuNzQ1IDMxNC4xMDIgMzUxLjI4NSAzMDcuNzE1TDM4NC4zNSAyNzUuNDEyQzM5MS4xMTIgMjY4LjgwNiAzOTQuODM2IDI1OS45NTkgMzk0LjgzNiAyNTAuNTAyQzM5NC44MzYgMjQxLjA0NiAzOTEuMTEyIDIzMi4xOTcgMzg0LjM1IDIyNS41ODlMMzUxLjI4NSAxOTMuMjg4Wk0yMDQuMjY3IDIwNS4zMjNIMjE3LjI0OEMyMjAuNjI3IDIwNS4zMjMgMjIzLjgyIDIwNi42MjIgMjI2LjIzOCAyMDguOTg1TDIzMy43MjYgMjE2LjI5OUwyMjUuODk5IDIyMy45NDVDMjI1LjQzMSAyMjQuMzc1IDIyNC45NzMgMjI0LjgyMSAyMjQuNTIgMjI1LjI4NUwyMjQuMjEzIDIyNS41OTFDMjIzLjc1MyAyMjYuMDQxIDIyMy4zMDggMjI2LjQ5OSAyMjIuOTI1IDIyNi45MThMMjE1LjIzNyAyMzQuNzk5TDIwNy45MjcgMjI3LjMxQzIwNS41NjcgMjI0Ljg4OSAyMDQuMjY2IDIyMS42OTMgMjA0LjI2NiAyMTguMzExTDIwNC4yNjcgMjA1LjMyM1pNMjA0LjI2NyAyODIuNjg5QzIwNC4yNjcgMjc5LjMwNyAyMDUuNTY1IDI3Ni4xMTIgMjA3LjkyNyAyNzMuNjk0TDIxNS4yMzcgMjY2LjIwM0wyMjIuODU0IDI3NC4wMDdDMjIzLjI5MyAyNzQuNDg2IDIyMy43NDYgMjc0Ljk1MSAyMjQuMjE0IDI3NS40MTFMMjI0LjUyIDI3NS43MTVDMjI0Ljk2MSAyNzYuMTY4IDIyNS40MTIgMjc2LjYwNiAyMjUuODI1IDI3Ni45ODVMMjMzLjcyNiAyODQuNzAyTDIyNi4yMzkgMjkyLjAxNkMyMjMuODIgMjk0LjM3OSAyMjAuNjI3IDI5NS42OCAyMTcuMjQ4IDI5NS42OEgyMDQuMjY3VjI4Mi42ODlaTTE5Mi4yMzggMjU4LjM2NkMxODUuODUzIDI2NC45MDggMTgyLjMzOCAyNzMuNTQ2IDE4Mi4zMzggMjgyLjY4OVYyOTUuNjhIMTcxLjg2MUMxNjguNDgxIDI5NS42OCAxNjUuMjg4IDI5NC4zNzkgMTYyLjg3MSAyOTIuMDE2TDEyOS44MDcgMjU5LjcxNUMxMjcuMzA2IDI1Ny4yNzEgMTI1LjkyOCAyNTQgMTI1LjkyOCAyNTAuNTAyQzEyNS45MjggMjQ3LjAwNSAxMjcuMzA2IDI0My43MzIgMTI5LjgwNyAyNDEuMjg4TDE2Mi44NzEgMjA4Ljk4NUMxNjUuMjg4IDIwNi42MjIgMTY4LjQ4MSAyMDUuMzIzIDE3MS44NjEgMjA1LjMyM0gxODIuMzM4VjIxOC4zMTFDMTgyLjMzOCAyMjcuNDU1IDE4NS44NTUgMjM2LjA5MyAxOTIuMjM4IDI0Mi42MzRMMTk5LjkxMyAyNTAuNTAxTDE5Mi4yMzggMjU4LjM2NlpNMjk0LjU3MyAzMjguMUMyOTQuNTczIDMzMS40ODEgMjkzLjI3MyAzMzQuNjc4IDI5MC45MTEgMzM3LjA5N0wyNTguNjI4IDM3MC4xOEMyNTYuMTg2IDM3Mi42ODMgMjUyLjkxNiAzNzQuMDYyIDI0OS40MjEgMzc0LjA2MkMyNDUuOTI1IDM3NC4wNjIgMjQyLjY1MiAzNzIuNjgzIDI0MC4yMSAzNzAuMTc5TDIwNy45MjcgMzM3LjA5NkMyMDUuNTY1IDMzNC42NzggMjA0LjI2NiAzMzEuNDgzIDIwNC4yNjYgMzI4LjFWMzE3LjYySDIxNy4yNDdDMjI2LjM4MyAzMTcuNjIgMjM1LjAxNyAzMTQuMTAyIDI0MS41NTggMzA3LjcxNUwyNDkuNDE5IDMwMC4wMzVMMjU3LjI4IDMwNy43MTVDMjYzLjgyIDMxNC4xMDIgMjcyLjQ1MyAzMTcuNjIgMjgxLjU4OSAzMTcuNjJIMjk0LjU3M1YzMjguMVpNMjM0Ljg0OCAyNTAuNTAxQzIzNC44NDggMjQyLjQ2IDI0MS4zODUgMjM1LjkyIDI0OS40MTkgMjM1LjkyQzI1Ny40NTMgMjM1LjkyIDI2My45OTIgMjQyLjQ2IDI2My45OTIgMjUwLjUwMUMyNjMuOTkyIDI1OCAyNTguNTQxIDIzNC44NDggMjUwLjUwMVpNMjk0LjU3MyAyOTUuNjhIMjgxLjU4OUMyNzguMjA5IDI5NS42OCAyNzUuMDE2IDI5NC4zNzkgMjcyLjU5OSAyOTIuMDE2TDI2NS4xMTEgMjg0LjcwMkwyNzIuOTM5IDI3Ny4wNTVDMjczLjQwNyAyNzYuNjIzIDI3My44NjggMjc2LjE3OCAyNzQuMzA0IDI3NS43MjlMMjc0LjYyNSAyNzUuNDA4QzI3NS4wODYgMjc0Ljk1OSAyNzUuNTMgMjc0LjUgMjc1LjkxIDI3NC4wODNMMjgzLjYwMSAyNjYuMjAzTDI5MC45MTEgMjczLjY5MkMyOTMuMjczIDI3Ni4xMTMgMjk0LjU3MyAyNzkuMzA4IDI5NC41NzMgMjgyLjY4OVYyOTUuNjhaTTI5NC41NzMgMjE4LjMxMUMyOTQuNTczIDIyMS42OTMgMjkzLjI3MyAyMjQuODg4IDI5MC45MTEgMjI3LjMwOEwyODMuNjAxIDIzNC43OTlMMjc1LjkzMiAyMjYuOTRDMjc1LjUwOCAyMjYuNDggMjc1LjA3MiAyMjYuMDI5IDI3NC42MjIgMjI1LjU5MUwyNzQuMzE1IDIyNS4yOEMyNzMuODU3IDIyNC44MTMgMjczLjM5IDIyNC4zNjEgMjcyLjk2MiAyMjMuOTY4TDI2NS4xMTEgMjE2LjI5OUwyNzIuNTk3IDIwOC45ODVDMjc1LjAxNiAyMDYuNjIyIDI3OC4yMDkgMjA1LjMyMyAyODEuNTg5IDIwNS4zMjNIMjk0LjU3M1YyMTguMzExWk0yOTQuNTczIDE4My4zODFIMjgxLjU4OUMyNzIuNDUxIDE4My4zODEgMjYzLjgxOCAxODYuODk5IDI1Ny4yNzggMTkzLjI4OEwyNDkuNDE5IDIwMC45NjZMMjQxLjU1NyAxOTMuMjg4QzIzNS4wMTggMTg2Ljg5OSAyMjYuMzg1IDE4My4zODEgMjE3LjI0OCAxODMuMzgxSDIwNC4yNjdWMTcyLjlDMjA0LjI2NyAxNjkuNTE3IDIwNS41NjUgMTY2LjMyMiAyMDcuOTI3IDE2My45MDRMMjQwLjIxIDEzMC44MjFDMjQyLjY1MiAxMjguMzE5IDI0NS45MjMgMTI2Ljk0IDI0OS40MTkgMTI2Ljk0QzI1Mi45MTUgMTI2Ljk0IDI1Ni4xODYgMTI4LjMxOSAyNTguNjI4IDEzMC44MjFMMjkwLjkxMSAxNjMuOTA0QzI5My4yNzMgMTY2LjMyMiAyOTQuNTczIDE2OS41MTkgMjk0LjU3MyAxNzIuOUwyOTQuNTczIDE4My4zODFaTTM2OS4wMyAyNTkuNzE1TDMzNS45NjYgMjkyLjAxNkMzMzMuNTQ4IDI5NC4zNzkgMzMwLjM1NCAyOTUuNjggMzI2Ljk3NCAyOTUuNjhIMzE2LjUwMVYyODIuNjg5QzMxNi41MDEgMjczLjU0OCAzMTIuOTg1IDI2NC45MSAzMDYuNjAxIDI1OC4zNjRMMjk4LjkyNSAyNTAuNTAxTDMwNi42MDEgMjQyLjYzNEMzMTIuOTg1IDIzNi4wOTIgMzE2LjUwMSAyMjcuNDU0IDMxNi41MDEgMjE4LjMxMVYyMDUuMzIzSDMyNi45NzRDMzMwLjM1NSAyMDUuMzIzIDMzMy41NDggMjA2LjYyMiAzMzUuOTY2IDIwOC45ODVMMzY5LjAzIDI0MS4yODhDMzcxLjUzMSAyNDMuNzMyIDM3Mi45MDkgMjQ3LjAwMyAzNzIuOTA5IDI1MC41MDJDMzcyLjkwOSAyNTQuMDAyIDM3MS41MzEgMjU3LjI3MSAzNjkuMDMgMjU5LjcxNVoiIGZpbGw9IiMwRTRCNUIiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF82MzIzXzIxNDAiPgo8cmVjdCB3aWR0aD0iMjkxIiBoZWlnaHQ9IjI5MSIgZmlsbD0id2hpdGUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEwNCAxMDUpIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+Cg==" />
           </div>
           <div>
             <h1 class="title">Reputation Analyzer</h1>
@@ -247,7 +245,7 @@
         <div class="nav">
           <a class="linkbtn" href="https://www.opengradient.ai/" target="_blank" rel="noreferrer">
             <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z" stroke="currentColor" stroke-width="2"/><path d="M8.5 13.5c1.1 1.2 2.4 1.8 3.5 1.8s2.4-.6 3.5-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 10h.01M15 10h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-            <span>OpenGradient</span>
+            <span>OpenGradient (official)</span>
           </a>
           <a class="linkbtn" href="https://linktr.ee/opengradient" target="_blank" rel="noreferrer">
             <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Z" stroke="currentColor" stroke-width="2"/><path d="M7.8 9.6c1.2-1.1 2.7-1.8 4.2-1.8s3 .7 4.2 1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8.6 15.1c.9 1.2 2.1 1.9 3.4 1.9s2.5-.7 3.4-1.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -266,13 +264,13 @@
 
       <div class="hero">
         <div>
-          <h2>The Network for<br/>Wallet Reputation</h2>
-          <p>Analyze wallet activity with a transparent heuristic score. Works fully in the browser for a tokenless MVP, with an upgrade path to verifiable inference later.</p>
+          <h2>Wallet Reputation<br/>Explorer</h2>
+          <p>Analyze wallet activity with a transparent heuristic score. Runs fully in the browser for a tokenless MVP, with an upgrade path to verifiable inference later.</p>
           <div class="heroActions">
             <a class="btn primary lg" href="#analyzer">Open Analyzer</a>
             <a class="btn lg" href="https://docs.opengradient.ai/" target="_blank" rel="noreferrer">OpenGradient Docs</a>
           </div>
-          <div class="hint" style="margin-top:12px">This is an unofficial community tool and is not affiliated with OpenGradient.</div>
+          <div class="hint" style="margin-top:12px">Unofficial community tool. Not affiliated with OpenGradient. OpenGradient name/logo are trademarks of their owners.</div>
         </div>
         <div class="globe" aria-hidden="true">
           <svg viewBox="0 0 520 520" fill="none">
