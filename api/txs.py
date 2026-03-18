@@ -95,6 +95,7 @@ class handler(BaseHTTPRequestHandler):
             "source": "blockscout",
             "address": address,
             "tx_count": len(txs),
+            "txs": txs,
             "features": {
                 "tx_count": raw_features[0],
                 "tx_per_hour": raw_features[1],
