@@ -116,7 +116,7 @@ class handler(BaseHTTPRequestHandler):
         if OG_AVAILABLE and private_key:
             try:
                 # Инициализация клиента
-                client = og.OpenGradientClient(private_key)
+                client = og.Client(private_key)
                 # Вставьте сюда ВАШ MODEL ID (например: '4-vJc69O2zGJTG')
                 YOUR_MODEL_ID = "4-vJc69O2zGJTG"
                 
