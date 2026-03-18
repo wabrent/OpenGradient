@@ -47,7 +47,7 @@ def _normalize_txs(items: list[dict]) -> list[dict]:
         out.append(
             {
                 "tx_hash": tx.get("hash"),
-                "value": _wei_to_eth(tx.get("value")),
+                "value": tx.get("value"),  # Pass raw wei value to frontend
                 "timestamp": ts,
             }
         )
@@ -68,7 +68,7 @@ def _get_features(txs):
                 if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
                 times.append(dt)
             except Exception: pass
-        values.append(float(tx.get("value") or 0.0))
+        values.append(_wei_to_eth(tx.get("value"))) # Convert wei to eth for AI model
 
     times.sort()
     span_hours = 0.0
@@ -93,17 +93,17 @@ class handler(BaseHTTPRequestHandler):
         # Разбираем URL-параметры
         parsed_path = urllib.parse.urlsplit(self.path)
         query = urllib.parse.parse_qs(parsed_path.query)
-        address = query.get('address', [''])[0].strip()
+        address = query.get("address", [""])[0].strip()
 
         if not address or not address.startswith("0x") or len(address) != 42:
             self.send_response(400)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"ok": False, "error": "invalid_address"}).encode())
             return
 
-        limit_raw = query.get('limit', ['50'])[0]
+        limit_raw = query.get("limit", ["50"])[0]
         try:
             limit = int(limit_raw)
         except Exception:
@@ -118,8 +118,8 @@ class handler(BaseHTTPRequestHandler):
                 data = json.loads(resp.read().decode("utf-8"))
         except Exception as e:
             self.send_response(502)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"ok": False, "error": "blockscout_error", "details": str(e)}).encode())
             return
@@ -127,8 +127,8 @@ class handler(BaseHTTPRequestHandler):
         items = data.get("items", [])
         if not isinstance(items, list):
             self.send_response(502)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"ok": False, "error": "blockscout_invalid_response"}).encode())
             return
@@ -157,8 +157,8 @@ class handler(BaseHTTPRequestHandler):
         }
 
         self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header("Content-type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
         # Шаг 2: ВЫЗОВ НАСТОЯЩЕЙ НЕЙРОСЕТИ В СЕТИ OPENGRADIENT
