@@ -16,12 +16,42 @@ except ImportError:
 
 BLOCKSCOUT_BASE_SEPOLIA = "https://base-sepolia.blockscout.com/api/v2"
 
-# 1. Извлекаем фичи
 def _wei_to_eth(value):
     s = str(value or "0")
     if not s.isdigit(): return 0.0
     try: return int(s) / 1e18
     except Exception: return 0.0
+
+def _normalize_iso(ts: object) -> str | None:
+    if not isinstance(ts, str) or not ts.strip():
+        return None
+    raw = ts.strip()
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(raw)
+    except Exception:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+def _normalize_txs(items: list[dict]) -> list[dict]:
+    out: list[dict] = []
+    for tx in items:
+        if not isinstance(tx, dict):
+            continue
+        ts = _normalize_iso(tx.get("timestamp"))
+        if not ts:
+            continue
+        out.append(
+            {
+                "tx_hash": tx.get("hash"),
+                "value": _wei_to_eth(tx.get("value")),
+                "timestamp": ts,
+            }
+        )
+    return out
 
 def _get_features(txs):
     tx_count = len(txs)
@@ -38,7 +68,7 @@ def _get_features(txs):
                 if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
                 times.append(dt)
             except Exception: pass
-        values.append(_wei_to_eth(tx.get("value")))
+        values.append(float(tx.get("value") or 0.0))
 
     times.sort()
     span_hours = 0.0
@@ -60,21 +90,25 @@ def _get_features(txs):
 # 2. Vercel Python Handler (Serverless Function)
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-
         # Разбираем URL-параметры
         parsed_path = urllib.parse.urlsplit(self.path)
         query = urllib.parse.parse_qs(parsed_path.query)
         address = query.get('address', [''])[0].strip()
 
         if not address or not address.startswith("0x") or len(address) != 42:
+            self.send_response(400)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
             self.wfile.write(json.dumps({"ok": False, "error": "invalid_address"}).encode())
             return
 
-        limit = query.get('limit', ['50'])[0]
+        limit_raw = query.get('limit', ['50'])[0]
+        try:
+            limit = int(limit_raw)
+        except Exception:
+            limit = 50
+        limit = max(1, min(limit, 500))
         
         # Шаг 1: Запрашиваем историю транзакций с Blockscout
         try:
@@ -83,10 +117,23 @@ class handler(BaseHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except Exception as e:
+            self.send_response(502)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
             self.wfile.write(json.dumps({"ok": False, "error": "blockscout_error", "details": str(e)}).encode())
             return
 
-        txs = data.get("items", [])
+        items = data.get("items", [])
+        if not isinstance(items, list):
+            self.send_response(502)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({"ok": False, "error": "blockscout_invalid_response"}).encode())
+            return
+
+        txs = _normalize_txs(items)
         raw_features = _get_features(txs)
 
         response_data = {
@@ -108,6 +155,11 @@ class handler(BaseHTTPRequestHandler):
             "score": 0,
             "reasons": []
         }
+
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
 
         # Шаг 2: ВЫЗОВ НАСТОЯЩЕЙ НЕЙРОСЕТИ В СЕТИ OPENGRADIENT
         private_key = os.environ.get("PRIVATE_KEY")
