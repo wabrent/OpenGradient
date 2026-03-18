@@ -1,2 +1,0 @@
-opengradient
-python-dotenv
