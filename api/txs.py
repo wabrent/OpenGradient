@@ -1,4 +1,4 @@
-from http.server import BaseHTTPRequestHandler
+аfrom http.server import BaseHTTPRequestHandler
 import json
 import urllib.request
 import urllib.parse
@@ -170,7 +170,7 @@ class handler(BaseHTTPRequestHandler):
                 # Инициализация клиента
                 client = og.Client(private_key)
                 # Вставьте сюда ВАШ MODEL ID (например: '4-vJc69O2zGJTG')
-                YOUR_MODEL_ID = "4-vJc69O2zGJTG"
+                YOUR_MODEL_ID = os.environ.get("OPENGRADIENT_MODEL_ID", "4-vJc69O2zGJTG")
                 
                 # Запускаем обученную модель в блокчейне
                 # Передаем массив X, состоящий из 1 набора фич [1, 6]
