@@ -5,18 +5,23 @@ import urllib.parse
 from datetime import datetime, timezone
 import os
 
-# OpenGradient доступен только если установлен
-OG_AVAILABLE = False  # Отключаем, пока не настроим правильно
+# OpenGradient is available only if installed
+OG_AVAILABLE = False  # Disabled until properly configured
 
 BLOCKSCOUT_BASE_SEPOLIA = "https://base-sepolia.blockscout.com/api/v2"
 
 def _wei_to_eth(value):
+    """Convert Wei to ETH"""
     s = str(value or "0")
-    if not s.isdigit(): return 0.0
-    try: return int(s) / 1e18
-    except Exception: return 0.0
+    if not s.isdigit():
+        return 0.0
+    try:
+        return int(s) / 1e18
+    except Exception:
+        return 0.0
 
 def _normalize_iso(ts: object) -> str | None:
+    """Normalize ISO timestamp to UTC format"""
     if not isinstance(ts, str) or not ts.strip():
         return None
     raw = ts.strip()
@@ -31,6 +36,7 @@ def _normalize_iso(ts: object) -> str | None:
     return dt.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 def _normalize_txs(items: list[dict]) -> list[dict]:
+    """Normalize transactions from Blockscout API"""
     out: list[dict] = []
     for tx in items:
         if not isinstance(tx, dict):
@@ -51,6 +57,7 @@ def _normalize_txs(items: list[dict]) -> list[dict]:
     return out
 
 def _get_features(txs):
+    """Extract features from transactions for ML model"""
     tx_count = len(txs)
     times = []
     values = []
@@ -60,12 +67,15 @@ def _get_features(txs):
         if isinstance(ts, str) and ts:
             try:
                 raw = ts.strip()
-                if raw.endswith("Z"): raw = raw[:-1] + "+00:00"
+                if raw.endswith("Z"):
+                    raw = raw[:-1] + "+00:00"
                 dt = datetime.fromisoformat(raw)
-                if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
                 times.append(dt)
-            except Exception: pass
-        values.append(_wei_to_eth(tx.get("value"))) # Convert wei to eth for AI model
+            except Exception:
+                pass
+        values.append(_wei_to_eth(tx.get("value")))  # Convert wei to eth for AI model
 
     times.sort()
     span_hours = 0.0
@@ -84,14 +94,15 @@ def _get_features(txs):
     return [float(tx_count), float(tx_per_hour), float(span_hours), float(repeat_ratio), float(small_fraction), float(large_fraction)]
 
 
-# 2. Vercel Python Handler (Serverless Function)
+# Vercel Python Handler (Serverless Function)
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # Разбираем URL-параметры
+        # Parse URL parameters
         parsed_path = urllib.parse.urlsplit(self.path)
         query = urllib.parse.parse_qs(parsed_path.query)
         address = query.get("address", [""])[0].strip()
 
+        # Validate address
         if not address or not address.startswith("0x") or len(address) != 42:
             self.send_response(400)
             self.send_header("Content-type", "application/json")
@@ -100,6 +111,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"ok": False, "error": "invalid_address"}).encode())
             return
 
+        # Parse limit parameter
         limit_raw = query.get("limit", ["50"])[0]
         try:
             limit = int(limit_raw)
@@ -107,7 +119,7 @@ class handler(BaseHTTPRequestHandler):
             limit = 50
         limit = max(1, min(limit, 500))
         
-        # Шаг 1: Запрашиваем историю транзакций с Blockscout
+        # Step 1: Fetch transaction history from Blockscout
         try:
             url = f"{BLOCKSCOUT_BASE_SEPOLIA}/addresses/{address}/transactions?size={limit}"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}, method="GET")
@@ -158,21 +170,21 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-        # Шаг 2: ВЫЗОВ НАСТОЯЩЕЙ НЕЙРОСЕТИ В СЕТИ OPENGRADIENT
+        # Step 2: OpenGradient AI Inference
         private_key = os.environ.get("PRIVATE_KEY")
         model_id = os.environ.get("OPENGRADIENT_MODEL_ID", "4-vJc69O2zGJTG")
 
-        # Если клиент установлен и есть ключ кошелька, вызываем инференс
+        # If client is installed and wallet key exists, run inference
         if OG_AVAILABLE and private_key:
             try:
-                # Инициализация клиента
+                # Initialize client
                 client = og.Client(private_key)
                 
-                # Запускаем обученную модель в блокчейне
-                # Передаем массив X, состоящий из 1 набора фич [1, 6]
+                # Run trained model on blockchain
+                # Pass feature array X with shape [1, 6]
                 result = client.run_inference(model_id=model_id, inputs=[raw_features])
 
-                # Парсим ответ (согласно нашей логике: 1 = Bot, 0 = Human)
+                # Parse response (according to our logic: 1 = Bot, 0 = Human)
                 is_bot = int(result[0]) == 1
                 response_data["assessment"] = "Bot" if is_bot else "Human"
                 response_data["score"] = 99 if is_bot else 10
@@ -186,13 +198,17 @@ class handler(BaseHTTPRequestHandler):
                 response_data["has_key"] = bool(private_key)
 
         else:
-            # Fallback - локальная симуляция если нет ключа (или библиотека не ставится)
+            # Fallback - local simulation if no key (or library not installed)
             if len(txs) > 0:
                 score = 0
-                if raw_features[0] >= 50: score += 20
-                if raw_features[1] >= 10: score += 15
-                if raw_features[3] >= 0.6: score += 20
-                if raw_features[4] >= 0.7: score += 10
+                if raw_features[0] >= 50:
+                    score += 20
+                if raw_features[1] >= 10:
+                    score += 15
+                if raw_features[3] >= 0.6:
+                    score += 20
+                if raw_features[4] >= 0.7:
+                    score += 10
 
                 response_data["score"] = score
                 response_data["assessment"] = "Bot" if score >= 60 else "Human"
