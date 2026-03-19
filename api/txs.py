@@ -1,5 +1,3 @@
-Вот полный код для api/txs.py:
-
 from http.server import BaseHTTPRequestHandler
 import json
 import urllib.request
