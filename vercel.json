@@ -8,5 +8,10 @@
     { "src": "/api/txs", "dest": "/api/txs.py" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/txs.py": {
+      "maxDuration": 60
+    }
+  }
 }
