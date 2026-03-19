@@ -5,14 +5,8 @@ import urllib.parse
 from datetime import datetime, timezone
 import os
 
-# Пытаемся импортировать OpenGradient.
-# Если мы запускаемся локально и библиотека не установлена, 
-# мы все равно сможем отдать данные (возвращая "Simulated OpenGradient Call").
-try:
-    import opengradient as og
-    OG_AVAILABLE = True
-except ImportError:
-    OG_AVAILABLE = False
+# OpenGradient доступен только если установлен
+OG_AVAILABLE = False  # Отключаем, пока не настроим правильно
 
 BLOCKSCOUT_BASE_SEPOLIA = "https://base-sepolia.blockscout.com/api/v2"
 
@@ -115,7 +109,7 @@ class handler(BaseHTTPRequestHandler):
         
         # Шаг 1: Запрашиваем историю транзакций с Blockscout
         try:
-            url = f"{BLOCKSCOUT_BASE_SEPOLIA}/addresses/{address}/transactions?items_count={limit}"
+            url = f"{BLOCKSCOUT_BASE_SEPOLIA}/addresses/{address}/transactions?size={limit}"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}, method="GET")
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -166,39 +160,48 @@ class handler(BaseHTTPRequestHandler):
 
         # Шаг 2: ВЫЗОВ НАСТОЯЩЕЙ НЕЙРОСЕТИ В СЕТИ OPENGRADIENT
         private_key = os.environ.get("PRIVATE_KEY")
-        
+        model_id = os.environ.get("OPENGRADIENT_MODEL_ID", "4-vJc69O2zGJTG")
+
         # Если клиент установлен и есть ключ кошелька, вызываем инференс
         if OG_AVAILABLE and private_key:
             try:
                 # Инициализация клиента
                 client = og.Client(private_key)
-                # Вставьте сюда ВАШ MODEL ID (например: '4-vJc69O2zGJTG')
-                YOUR_MODEL_ID = os.environ.get("OPENGRADIENT_MODEL_ID", "4-vJc69O2zGJTG")
                 
                 # Запускаем обученную модель в блокчейне
                 # Передаем массив X, состоящий из 1 набора фич [1, 6]
-                result = client.run_inference(model_id=YOUR_MODEL_ID, inputs=[raw_features])
-                
+                result = client.run_inference(model_id=model_id, inputs=[raw_features])
+
                 # Парсим ответ (согласно нашей логике: 1 = Bot, 0 = Human)
                 is_bot = int(result[0]) == 1
                 response_data["assessment"] = "Bot" if is_bot else "Human"
                 response_data["score"] = 99 if is_bot else 10
-                response_data["reasons"] = [f"Verified by OpenGradient AI (Model {YOUR_MODEL_ID})"]
-            
-            except Exception as e:
-                response_data["reasons"] = [f"OG Inference Error: {str(e)}"]
+                response_data["reasons"] = [f"Verified by OpenGradient AI (Model {model_id})"]
 
-        elif len(txs) > 0:
+            except Exception as e:
+                response_data["assessment"] = "Error"
+                response_data["score"] = 0
+                response_data["reasons"] = [f"OG Inference Error: {str(e)}"]
+                response_data["og_available"] = True
+                response_data["has_key"] = bool(private_key)
+
+        else:
             # Fallback - локальная симуляция если нет ключа (или библиотека не ставится)
-            # Временно имитируем ИИ-вывод на основе старой логики
-            score = 0
-            if raw_features[0] >= 50: score += 20
-            if raw_features[1] >= 10: score += 15
-            if raw_features[3] >= 0.6: score += 20
-            if raw_features[4] >= 0.7: score += 10
-            
-            response_data["score"] = score
-            response_data["assessment"] = "Bot" if score >= 60 else "Human"
-            response_data["reasons"] = ["Locally simulated (Add OpenGradient PRIVATE_KEY to Vercel for real inference)"]
+            if len(txs) > 0:
+                score = 0
+                if raw_features[0] >= 50: score += 20
+                if raw_features[1] >= 10: score += 15
+                if raw_features[3] >= 0.6: score += 20
+                if raw_features[4] >= 0.7: score += 10
+
+                response_data["score"] = score
+                response_data["assessment"] = "Bot" if score >= 60 else "Human"
+                response_data["reasons"] = ["Locally simulated (Add PRIVATE_KEY to Vercel env for real AI inference)"]
+                response_data["og_available"] = OG_AVAILABLE
+                response_data["has_key"] = bool(private_key)
+            else:
+                response_data["assessment"] = "Unknown"
+                response_data["score"] = 0
+                response_data["reasons"] = ["No transactions found"]
 
         self.wfile.write(json.dumps(response_data).encode())
