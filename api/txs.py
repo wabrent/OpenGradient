@@ -44,10 +44,13 @@ def _normalize_txs(items: list[dict]) -> list[dict]:
         ts = _normalize_iso(tx.get("timestamp"))
         if not ts:
             continue
+        # Convert Wei to ETH for frontend (which expects ETH, not Wei)
+        value_wei = tx.get("value")
+        value_eth = _wei_to_eth(value_wei) if value_wei is not None else 0.0
         out.append(
             {
                 "tx_hash": tx.get("hash"),
-                "value": tx.get("value"),  # Pass raw wei value to frontend
+                "value": value_eth,  # Pass ETH value to frontend
                 "timestamp": ts,
             }
         )
