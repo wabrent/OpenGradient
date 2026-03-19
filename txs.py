@@ -123,7 +123,7 @@ class handler(BaseHTTPRequestHandler):
         try:
             url = f"{BLOCKSCOUT_BASE_SEPOLIA}/addresses/{address}/transactions?size={limit}"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"}, method="GET")
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except Exception as e:
             self.send_response(502)
