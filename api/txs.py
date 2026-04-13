@@ -5,9 +5,13 @@ import urllib.parse
 from datetime import datetime, timezone
 import os
 
-# OpenGradient - temporarily disabled for debugging
-OG_AVAILABLE = False
-og = None
+# OpenGradient SDK
+try:
+    import opengradient as og
+    OG_AVAILABLE = True
+except ImportError:
+    OG_AVAILABLE = False
+    og = None
 
 BLOCKSCOUT_BASE_SEPOLIA = "https://base-sepolia.blockscout.com/api/v2"
 
@@ -181,23 +185,37 @@ class handler(BaseHTTPRequestHandler):
 
         # Step 2: OpenGradient AI Inference
         private_key = os.environ.get("PRIVATE_KEY")
-        model_id = os.environ.get("OPENGRADIENT_MODEL_ID", "4-vJc69O2zGJTG")
+        model_cid = os.environ.get("OPENGRADIENT_MODEL_ID", "4-vJc69O2zGJTG")
 
-        # If client is installed and wallet key exists, run inference
+        # If SDK is installed and wallet key exists, run inference
         if OG_AVAILABLE and private_key and og is not None:
             try:
-                # Initialize client
-                client = og.Client(private_key)
+                # Initialize Alpha client for ML inference
+                alpha = og.Alpha(private_key=private_key)
                 
-                # Run trained model on blockchain
-                # Pass feature array X with shape [1, 6]
-                result = client.run_inference(model_id=model_id, inputs=[raw_features])
+                # Prepare model input
+                model_input = {
+                    "tx_count": raw_features[0],
+                    "tx_per_hour": raw_features[1],
+                    "span_hours": raw_features[2],
+                    "repeat_ratio": raw_features[3],
+                    "small_fraction": raw_features[4],
+                    "large_fraction": raw_features[5]
+                }
+                
+                # Run inference
+                result = alpha.infer(
+                    model_cid=model_cid,
+                    model_input=model_input,
+                    inference_mode=og.InferenceMode.VANILLA
+                )
 
-                # Parse response (according to our logic: 1 = Bot, 0 = Human)
-                is_bot = int(result[0]) == 1
+                # Parse response
+                model_output = result.model_output
+                is_bot = int(model_output[0]) == 1 if model_output else 0
                 response_data["assessment"] = "Bot" if is_bot else "Human"
                 response_data["score"] = 99 if is_bot else 10
-                response_data["reasons"] = [f"Verified by OpenGradient AI (Model {model_id})"]
+                response_data["reasons"] = [f"Verified by OpenGradient AI (Model {model_cid})"]
 
             except Exception as e:
                 response_data["assessment"] = "Error"
