@@ -1,13 +1,6 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "api/debug.py", "use": "@vercel/python" },
-    { "src": "api/txs.py", "use": "@vercel/python" }
-  ],
-  "routes": [
-    { "src": "/api/debug", "dest": "/api/debug.py" },
-    { "src": "/api/txs", "dest": "/api/txs.py" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/**", "use": "@vercel/static" }
   ]
 }
