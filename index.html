@@ -744,11 +744,13 @@
         addr.value = '0xfa13a15a2fb420e2313918496b5b05427ed8e31a';
         txjson.value = JSON.stringify(defaultMockTransactions(), null, 2);
         saveState();
+        run();
       });
       btnBot.addEventListener('click', () => {
         addr.value = '0x0000000000000000000000000000000000000000';
         txjson.value = JSON.stringify(botMockTransactions(), null, 2);
         saveState();
+        run();
       });
       btnClear.addEventListener('click', () => {
         addr.value = '';
