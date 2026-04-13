@@ -5,7 +5,7 @@
     { "src": "api/*.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/api/txs", "dest": "/api/txs.py" },
+    { "src": "/api/txs(.*)", "dest": "/api/txs.py" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
