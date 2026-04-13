@@ -5,13 +5,9 @@ import urllib.parse
 from datetime import datetime, timezone
 import os
 
-# OpenGradient is available only if installed
-try:
-    import opengradient as og
-    OG_AVAILABLE = True
-except ImportError:
-    OG_AVAILABLE = False
-    og = None
+# OpenGradient - temporarily disabled for debugging
+OG_AVAILABLE = False
+og = None
 
 BLOCKSCOUT_BASE_SEPOLIA = "https://base-sepolia.blockscout.com/api/v2"
 
@@ -102,10 +98,18 @@ def _get_features(txs):
 # Vercel Python Handler (Serverless Function)
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # Parse URL parameters
-        parsed_path = urllib.parse.urlsplit(self.path)
-        query = urllib.parse.parse_qs(parsed_path.query)
-        address = query.get("address", [""])[0].strip()
+        try:
+            # Parse URL parameters
+            parsed_path = urllib.parse.urlsplit(self.path)
+            query = urllib.parse.parse_qs(parsed_path.query)
+            address = query.get("address", [""])[0].strip()
+        except Exception as e:
+            self.send_response(500)
+            self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"ok": False, "error": "parse_error", "details": str(e)}).encode())
+            return
 
         # Validate address
         if not address or not address.startswith("0x") or len(address) != 42:
