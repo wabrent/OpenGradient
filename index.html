@@ -337,7 +337,7 @@
               <span class="label" id="txMode">Auto-fetch</span>
             </summary>
             <div class="body">
-              <textarea id="txjson" class="textarea" spellcheck="false" placeholder='[{"value":0.01,"timestamp":"2024-03-12T09:15:00Z"},{"value":0.01,"timestamp":"2024-03-12T09:16:00Z"}]'></textarea>
+              <textarea id="txjson" class="textarea" spellcheck="false" placeholder="Click Example or Bot button first!"></textarea>
               <div class="hint">
                 Leave empty to auto-fetch recent transactions on Base Sepolia. Timestamp format: <code>2024-03-12T09:15:00Z</code>.
               </div>
@@ -620,7 +620,7 @@
 
       function parseTransactions(raw) {
         const t = (raw || '').trim();
-        if (!t) return { ok: false, error: 'Enter transactions JSON below (or click Example/Bot for demo data)' };
+        if (!t) return { ok: false, error: 'Click Example or Bot to add demo data, then Analyze' };
         let parsed;
         try { parsed = JSON.parse(t); }
         catch { return { ok: false, error: 'Invalid transactions JSON' }; }
