@@ -620,59 +620,117 @@
 
       function parseTransactions(raw) {
         const t = (raw || '').trim();
-        if (!t) return { ok: true, txs: null, note: 'Auto-fetching transactions…' };
+        if (!t) return { ok: false, error: 'Enter transactions JSON below (or click Example/Bot for demo data)' };
         let parsed;
         try { parsed = JSON.parse(t); }
         catch { return { ok: false, error: 'Invalid transactions JSON' }; }
         if (!Array.isArray(parsed)) return { ok: false, error: 'Transactions JSON must be a list/array' };
         const txs = parsed.filter(x => x && typeof x === 'object');
-        return { ok: true, txs, note: `Using pasted transactions: ${txs.length} (auto-fetch disabled)` };
+        return { ok: true, txs, note: `Using pasted transactions: ${txs.length}` };
       }
 
       function updateTxMode() {
         if (!txMode) return;
         const t = (txjson.value || '').trim();
         if (!t) {
-          txMode.textContent = 'Auto-fetch';
+          txMode.textContent = 'Paste JSON required';
           return;
         }
         try {
           const parsed = JSON.parse(t);
-          txMode.textContent = Array.isArray(parsed) ? `Custom JSON (${parsed.length})` : 'Custom JSON';
+          txMode.textContent = Array.isArray(parsed) ? `Using ${parsed.length} transactions` : 'Custom JSON';
         } catch {
-          txMode.textContent = 'Custom JSON (invalid)';
+          txMode.textContent = 'Invalid JSON';
         }
       }
 
       async function fetchTransactions(address, limit) {
-        if (location.protocol === 'file:') {
-          return { ok: false, error: 'Auto-fetch is unavailable when opening the file locally. Use the deployed Vercel URL.' };
-        }
-        const url = `/api/txs?address=${encodeURIComponent(address)}&limit=${encodeURIComponent(String(limit || 200))}`;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
-        let r;
+        return { ok: false, error: 'API not available on static deployment. Paste transactions JSON below.' };
+      }
+
+      function loadState() {
         try {
-          r = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: controller.signal });
-        } catch (e) {
-          clearTimeout(timeoutId);
-          if (e && e.name === 'AbortError') {
-            return { ok: false, error: 'Timeout while fetching transactions. Try again.' };
+          const a = localStorage.getItem('wallet_reputation_address');
+          const t = localStorage.getItem('wallet_reputation_txs');
+          if (a) addr.value = a;
+          if (t) txjson.value = t;
+        } catch {}
+        updateTxMode();
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem('wallet_reputation_address', addr.value.trim());
+          localStorage.setItem('wallet_reputation_txs', txjson.value);
+        } catch {}
+        updateTxMode();
+      }
+
+      async function copyText(text) {
+        if (!text) return false;
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+          } catch {
+            return false;
           }
-          return { ok: false, error: 'Network error while fetching transactions.' };
         }
-        clearTimeout(timeoutId);
-        let data = null;
-        try { data = await r.json(); } catch { data = null; }
-        if (!r.ok) {
-          const hint = data && data.hint ? ` ${data.hint}` : '';
-          const err = data && data.error ? data.error : `HTTP ${r.status}`;
-          return { ok: false, error: `Failed to fetch transactions: ${err}.${hint}` };
+      }
+
+      async function run() {
+        saveState();
+        btnRun.disabled = true;
+        setStatus({}, 'Analyzing…', 'info');
+        setOutput(null);
+
+        const address = addr.value.trim();
+        const v = validateAddress(address);
+        if (!v.ok) {
+          setStatus({}, v.message, 'error');
+          btnRun.disabled = false;
+          return;
         }
-        if (!data || data.ok !== true || !Array.isArray(data.txs)) {
-          return { ok: false, error: 'Invalid /api/txs response.' };
+
+        const p = parseTransactions(txjson.value);
+        if (!p.ok) {
+          setStatus({}, p.error, 'error');
+          btnRun.disabled = false;
+          return;
         }
-        return { ok: true, txs: data.txs, meta: data };
+
+        let txs = p.txs;
+        let note = p.note;
+        if (txs === null) {
+          setStatus({}, 'Paste transactions JSON below', 'info');
+          const fetched = await fetchTransactions(address, 200);
+          if (!fetched.ok) {
+            setStatus({}, fetched.error, 'error');
+            btnRun.disabled = false;
+            return;
+          }
+          txs = fetched.txs;
+          note = txs.length
+            ? `Fetched ${txs.length} transactions (Base Sepolia)`
+            : 'No transactions found on Base Sepolia (very low confidence)';
+        }
+
+        const result = scoreWalletLocally(address, txs);
+        const message = v.message || note || 'Done';
+        setStatus(result, message, 'info');
+        setOutput(result);
+        btnRun.disabled = false;
       }
 
       function loadState() {
